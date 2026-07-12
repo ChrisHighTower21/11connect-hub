@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id                String   @id @default(cuid())
+  name              String
+  eaId              String?
+  mainPosition      String?
+  secondaryPosition String?
+  discordName       String?
+  joinedAt          DateTime?
+  isActive          Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stats        PlayerMatchStat[]
+  matchSquads  MatchSquad[]
+}
+
+model Competition {
+  id        String          @id @default(cuid())
+  name      String
+  type      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  seasons   Season[]
+}
+
+model Season {
+  id            String   @id @default(cuid())
+  competitionId String
+  eafcCycle     String
+  name          String
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  matches       Match[]
+}
+
+model Match {
+  id            String      @id @default(cuid())
+  seasonId      String
+  matchDate     DateTime
+  opponent      String
+  homeAway      String
+  matchday      String?
+  teamGoals     Int
+  opponentGoals Int
+  result        String
+  status        String @default("DRAFT")
+  notes         String?
+  isArchived    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  season        Season            @relation(fields: [seasonId], references: [id])
+  squad         MatchSquad[]
+  playerStats   PlayerMatchStat[]
+  screenshots   MatchScreenshot[]
+}
+
+model MatchSquad {
+  id        String   @id @default(cuid())
+  matchId   String
+  playerId  String
+  createdAt DateTime @default(now())
+
+  match     Match  @relation(fields: [matchId], references: [id])
+  player    Player @relation(fields: [playerId], references: [id])
+
+  @@unique([matchId, playerId])
+}
+
+model PlayerMatchStat {
+  id        String @id @default(cuid())
+  matchId   String
+  playerId  String
+
+  position  String?
+  rating    Float
+  isPotm    Boolean @default(false)
+
+  goals     Int @default(0)
+  assists   Int @default(0)
+
+  shots         Int   @default(0)
+  shotAccuracy  Float @default(0)
+  shotsOnTarget Float @default(0)
+
+  passes           Int   @default(0)
+  passAccuracy     Float @default(0)
+  successfulPasses Float @default(0)
+
+  dribbles           Int   @default(0)
+  dribbleSuccessRate Float @default(0)
+  successfulDribbles Float @default(0)
+
+  duels           Int   @default(0)
+  duelSuccessRate Float @default(0)
+  successfulDuels Float @default(0)
+
+  offsides       Int @default(0)
+  fouls          Int @default(0)
+  possessionWon  Int @default(0)
+  possessionLost Int @default(0)
+
+  minutesPlayed    Int   @default(0)
+  distanceKm       Float @default(0)
+  sprintDistanceKm Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match     Match  @relation(fields: [matchId], references: [id])
+  player    Player @relation(fields: [playerId], references: [id])
+
+  @@unique([matchId, playerId])
+}
+model MatchScreenshot {
+  id        String   @id @default(cuid())
+  matchId   String
+
+  fileName  String
+  filePath  String
+  fileType  String?
+  fileSize  Int?
+
+  category  String @default("OVERVIEW")
+
+  createdAt DateTime @default(now())
+
+  match     Match @relation(fields: [matchId], references: [id])
+  analyses  ScreenshotAnalysis[]
+}
+model ScreenshotAnalysis {
+  id           String   @id @default(cuid())
+  screenshotId String
+
+  rawText      String
+  status       String   @default("PENDING")
+
+  createdAt    DateTime @default(now())
+
+  screenshot   MatchScreenshot @relation(fields: [screenshotId], references: [id])
+}
