@@ -7,6 +7,7 @@ type Season = {
   id: string;
   name: string;
   eafcCycle: string;
+  isActive: boolean;
   competition: {
     id: string;
     name: string;
