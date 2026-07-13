@@ -31,9 +31,15 @@ export function PlayerActions({
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/players/${playerId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch("/api/players", {
+  method: "DELETE",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    playerId,
+  }),
+});
 
       const data = await response.json();
 

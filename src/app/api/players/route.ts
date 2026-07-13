@@ -104,3 +104,81 @@ export async function POST(request: Request) {
     );
   }
 }
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+
+    const playerId =
+      typeof body.playerId === "string"
+        ? body.playerId.trim()
+        : "";
+
+    if (!playerId) {
+      return NextResponse.json(
+        {
+          error: "Keine Spieler-ID übergeben.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const player = await prisma.player.findUnique({
+      where: {
+        id: playerId,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!player) {
+      return NextResponse.json(
+        {
+          error: `Spieler mit der ID ${playerId} wurde nicht gefunden.`,
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    await prisma.$transaction([
+      prisma.playerMatchStat.deleteMany({
+        where: {
+          playerId,
+        },
+      }),
+
+      prisma.matchSquad.deleteMany({
+        where: {
+          playerId,
+        },
+      }),
+
+      prisma.player.delete({
+        where: {
+          id: playerId,
+        },
+      }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      message: `${player.name} wurde gelöscht.`,
+    });
+  } catch (error) {
+    console.error("DELETE /api/players failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Spieler konnte nicht gelöscht werden.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
