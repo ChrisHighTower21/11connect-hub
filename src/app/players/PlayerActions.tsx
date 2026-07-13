@@ -50,6 +50,10 @@ export function PlayerActions({
       }
 
       router.refresh();
+
+setTimeout(() => {
+  window.location.reload();
+}, 150);
     } catch (error) {
       setError(
         error instanceof Error

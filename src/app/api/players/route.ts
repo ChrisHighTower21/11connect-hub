@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   try {
@@ -164,6 +165,8 @@ export async function DELETE(request: Request) {
         },
       }),
     ]);
+revalidatePath("/players");
+revalidatePath("/");
 
     return NextResponse.json({
       success: true,

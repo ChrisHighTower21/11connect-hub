@@ -2,6 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { PlayerActions } from "./PlayerActions";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PlayersPage() {
   const players = await prisma.player.findMany({
     include: {
