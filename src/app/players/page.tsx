@@ -19,6 +19,7 @@ export default async function PlayersPage() {
           <h1 className="page-title">Spieler</h1>
           <p className="page-description">Spielerstamm verwalten.</p>
         </div>
+
         <Link className="button button-primary" href="/players/new">
           + Spieler anlegen
         </Link>
@@ -38,41 +39,50 @@ export default async function PlayersPage() {
               <th>Tore</th>
               <th>Vorlagen</th>
               <th>Ø Bewertung</th>
-	      <th>Aktionen</th>
+              <th>Aktionen</th>
             </tr>
           </thead>
+
           <tbody>
             {players.length === 0 ? (
               <tr>
-                <td colSpan={10}>Noch keine Spieler angelegt.</td>
+                <td colSpan={11}>Noch keine Spieler angelegt.</td>
               </tr>
             ) : (
               players.map((player) => {
                 const games = player.stats.length;
+
                 const goals = player.stats.reduce(
                   (sum, stat) => sum + stat.goals,
                   0
                 );
+
                 const assists = player.stats.reduce(
                   (sum, stat) => sum + stat.assists,
                   0
                 );
+
                 const ratingSum = player.stats.reduce(
                   (sum, stat) => sum + stat.rating,
                   0
                 );
+
                 const averageRating =
                   games > 0 ? (ratingSum / games).toFixed(2) : "-";
 
                 return (
                   <tr key={player.id}>
                     <td>
-                      <Link href={`/players/${player.id}`}>{player.name}</Link>
+                      <Link href={`/players/${player.id}`}>
+                        {player.name}
+                      </Link>
                     </td>
+
                     <td>{player.eaId || "-"}</td>
                     <td>{player.mainPosition || "-"}</td>
                     <td>{player.secondaryPosition || "-"}</td>
                     <td>{player.discordName || "-"}</td>
+
                     <td>
                       <span
                         className={
@@ -81,19 +91,21 @@ export default async function PlayersPage() {
                             : "badge badge-muted"
                         }
                       >
-<td>
-  <PlayerActions
-    playerId={player.id}
-    playerName={player.name}
-  />
-</td>
                         {player.isActive ? "Aktiv" : "Inaktiv"}
                       </span>
                     </td>
+
                     <td>{games}</td>
                     <td>{goals}</td>
                     <td>{assists}</td>
                     <td>{averageRating}</td>
+
+                    <td>
+                      <PlayerActions
+                        playerId={player.id}
+                        playerName={player.name}
+                      />
+                    </td>
                   </tr>
                 );
               })
