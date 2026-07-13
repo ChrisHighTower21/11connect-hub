@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
+import { prisma } from "@/lib/db";
 import { EditPlayerForm } from "./EditPlayerForm";
 
 type EditPlayerPageProps = {
@@ -8,7 +8,9 @@ type EditPlayerPageProps = {
   };
 };
 
-export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
+export default async function EditPlayerPage({
+  params,
+}: EditPlayerPageProps) {
   const player = await prisma.player.findUnique({
     where: {
       id: params.id,
@@ -24,7 +26,10 @@ export default async function EditPlayerPage({ params }: EditPlayerPageProps) {
       <header className="page-header">
         <div>
           <h1 className="page-title">Spieler bearbeiten</h1>
-          <p className="page-description">{player.name}</p>
+
+          <p className="page-description">
+            Stammdaten von {player.name} aktualisieren.
+          </p>
         </div>
       </header>
 

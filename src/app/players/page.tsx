@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { PlayerActions } from "./PlayerActions";
 
 export default async function PlayersPage() {
   const players = await prisma.player.findMany({
@@ -37,6 +38,7 @@ export default async function PlayersPage() {
               <th>Tore</th>
               <th>Vorlagen</th>
               <th>Ø Bewertung</th>
+	      <th>Aktionen</th>
             </tr>
           </thead>
           <tbody>
@@ -79,6 +81,12 @@ export default async function PlayersPage() {
                             : "badge badge-muted"
                         }
                       >
+<td>
+  <PlayerActions
+    playerId={player.id}
+    playerName={player.name}
+  />
+</td>
                         {player.isActive ? "Aktiv" : "Inaktiv"}
                       </span>
                     </td>
