@@ -102,7 +102,7 @@ export default function NewPlayerPage() {
               <input
                 type="text"
                 name="name"
-                placeholder="z. B. Spielername"
+                placeholder=""
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 disabled={isSaving}
@@ -115,7 +115,7 @@ export default function NewPlayerPage() {
               <input
                 type="text"
                 name="eaId"
-                placeholder="z. B. EA-ID"
+                placeholder=""
                 value={eaId}
                 onChange={(event) => setEaId(event.target.value)}
                 disabled={isSaving}
@@ -155,7 +155,7 @@ export default function NewPlayerPage() {
               <input
                 type="text"
                 name="discordName"
-                placeholder="z. B. Discord-ID"
+                placeholder=""
                 value={discordName}
                 onChange={(event) => setDiscordName(event.target.value)}
                 disabled={isSaving}
