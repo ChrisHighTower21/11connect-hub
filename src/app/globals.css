@@ -44,3 +44,22 @@
   font-weight: 800;
   margin-top: 12px;
 }
+/* Datepicker im Dark Mode */
+.date-input-wrapper {
+  position: relative;
+}
+
+.date-input-wrapper input[type="date"] {
+  padding-right: 42px;
+}
+
+.date-input-wrapper::after {
+  content: "📅";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: white;
+  font-size: 18px;
+}
