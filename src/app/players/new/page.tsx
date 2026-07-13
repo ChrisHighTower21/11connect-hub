@@ -18,6 +18,12 @@ export default function NewPlayerPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!name.trim()) {
+      setError("Bitte gib einen Spielernamen ein.");
+      return;
+    }
+
     setError("");
     setIsSaving(true);
 
@@ -28,23 +34,49 @@ export default function NewPlayerPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          eaId,
-          mainPosition,
-          secondaryPosition,
-          discordName,
-          joinedAt,
+          name: name.trim(),
+          eaId: eaId.trim() || null,
+          mainPosition: mainPosition.trim() || null,
+          secondaryPosition: secondaryPosition.trim() || null,
+          discordName: discordName.trim() || null,
+          joinedAt: joinedAt || null,
         }),
       });
 
+      const responseText = await response.text();
+
       if (!response.ok) {
-        throw new Error("Spieler konnte nicht gespeichert werden.");
+        let message = "Spieler konnte nicht gespeichert werden.";
+
+        try {
+          const data = JSON.parse(responseText);
+
+          if (typeof data?.error === "string") {
+            message = data.error;
+          }
+
+          if (typeof data?.message === "string") {
+            message = data.message;
+          }
+        } catch {
+          if (responseText) {
+            message = responseText;
+          }
+        }
+
+        throw new Error(message);
       }
 
       router.push("/players");
       router.refresh();
     } catch (err) {
-      setError("Beim Speichern ist ein Fehler aufgetreten.");
+      console.error("Fehler beim Speichern des Spielers:", err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Beim Speichern ist ein unbekannter Fehler aufgetreten."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -55,6 +87,7 @@ export default function NewPlayerPage() {
       <header className="page-header">
         <div>
           <h1 className="page-title">Spieler anlegen</h1>
+
           <p className="page-description">
             Neuen Spieler zum Spielerstamm hinzufügen.
           </p>
@@ -67,10 +100,12 @@ export default function NewPlayerPage() {
             <label>
               Spielername
               <input
+                type="text"
                 name="name"
-                placeholder="z. B. ChrisHighTow"
+                placeholder="z. B. Spielername"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                disabled={isSaving}
                 required
               />
             </label>
@@ -78,10 +113,12 @@ export default function NewPlayerPage() {
             <label>
               EA-ID
               <input
+                type="text"
                 name="eaId"
-                placeholder="z. B. ChristianBaulig"
+                placeholder="z. B. EA-ID"
                 value={eaId}
                 onChange={(event) => setEaId(event.target.value)}
+                disabled={isSaving}
               />
             </label>
           </div>
@@ -90,49 +127,72 @@ export default function NewPlayerPage() {
             <label>
               Hauptposition
               <input
+                type="text"
                 name="mainPosition"
                 placeholder="z. B. IV, ZOM, ST"
                 value={mainPosition}
                 onChange={(event) => setMainPosition(event.target.value)}
+                disabled={isSaving}
               />
             </label>
 
             <label>
               Nebenposition
               <input
+                type="text"
                 name="secondaryPosition"
                 placeholder="z. B. LIV, RIV, ZDM"
                 value={secondaryPosition}
                 onChange={(event) => setSecondaryPosition(event.target.value)}
+                disabled={isSaving}
               />
             </label>
           </div>
 
           <div className="form-row">
             <label>
-              Discord-Name
+              Discord-ID
               <input
+                type="text"
                 name="discordName"
-                placeholder="z. B. Christian"
+                placeholder="z. B. Discord-ID"
                 value={discordName}
                 onChange={(event) => setDiscordName(event.target.value)}
+                disabled={isSaving}
               />
             </label>
 
             <label>
               Eintrittsdatum
               <input
-                name="joinedAt"
                 type="date"
+                name="joinedAt"
                 value={joinedAt}
                 onChange={(event) => setJoinedAt(event.target.value)}
+                disabled={isSaving}
               />
             </label>
           </div>
 
-          {error ? <p style={{ color: "#ef4444" }}>{error}</p> : null}
+          {error ? (
+            <div
+              style={{
+                padding: "12px 14px",
+                border: "1px solid rgba(239,68,68,.35)",
+                borderRadius: 12,
+                background: "rgba(239,68,68,.1)",
+                color: "#fca5a5",
+              }}
+            >
+              {error}
+            </div>
+          ) : null}
 
-          <button className="button button-primary" type="submit">
+          <button
+            className="button button-primary"
+            type="submit"
+            disabled={isSaving}
+          >
             {isSaving ? "Speichert..." : "Speichern"}
           </button>
         </form>
