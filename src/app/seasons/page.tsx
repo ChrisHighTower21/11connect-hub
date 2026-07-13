@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
 import { SeasonManager } from "./SeasonManager";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function SeasonsPage() {
   const competitions = await prisma.competition.findMany({
     orderBy: {
