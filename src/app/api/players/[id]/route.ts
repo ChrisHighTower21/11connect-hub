@@ -2,19 +2,32 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function GET(
   request: Request,
-  { params }: RouteContext
+  context: RouteContext
 ) {
   try {
+    const { id } = await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Keine Spieler-ID übergeben.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const player = await prisma.player.findUnique({
       where: {
-        id: params.id,
+        id,
       },
     });
 
@@ -46,10 +59,42 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: RouteContext
+  context: RouteContext
 ) {
   try {
+    const { id } = await context.params;
     const body = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Keine Spieler-ID übergeben.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const existingPlayer = await prisma.player.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existingPlayer) {
+      return NextResponse.json(
+        {
+          error: "Spieler wurde nicht gefunden.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
 
     const name =
       typeof body.name === "string"
@@ -86,7 +131,7 @@ export async function PATCH(
 
     const player = await prisma.player.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         name,
@@ -134,12 +179,25 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: RouteContext
+  context: RouteContext
 ) {
   try {
+    const { id } = await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Keine Spieler-ID übergeben.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const player = await prisma.player.findUnique({
       where: {
-        id: params.id,
+        id,
       },
       select: {
         id: true,
@@ -161,19 +219,19 @@ export async function DELETE(
     await prisma.$transaction([
       prisma.playerMatchStat.deleteMany({
         where: {
-          playerId: params.id,
+          playerId: id,
         },
       }),
 
       prisma.matchSquad.deleteMany({
         where: {
-          playerId: params.id,
+          playerId: id,
         },
       }),
 
       prisma.player.delete({
         where: {
-          id: params.id,
+          id,
         },
       }),
     ]);
