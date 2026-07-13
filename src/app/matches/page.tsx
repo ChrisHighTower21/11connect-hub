@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function getResultLabel(result: string) {
   if (result === "WIN") return "Sieg";
   if (result === "DRAW") return "Remis";
