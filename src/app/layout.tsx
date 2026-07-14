@@ -1,20 +1,21 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "Flutlicht-Helden Hub",
-  description: "Statistik- und Managementplattform für EA FC Pro Clubs",
+  title: "11connect Hub",
+  description: "Statistik- und Managementplattform für EA FC Clubs",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="de">
       <body>
-        <div className="app-shell">
-          <Sidebar />
-          <main className="main">{children}</main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
