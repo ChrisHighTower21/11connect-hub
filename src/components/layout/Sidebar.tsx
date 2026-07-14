@@ -13,7 +13,7 @@ const navItems = [
 export function Sidebar() {
   return (
     <aside className="sidebar">
-      <div className="brand">Flutlicht-Helden Hub</div>
+      <div className="brand">11connect Hub</div>
       <nav className="nav">
         {navItems.map((item) => (
           <Link className="nav-link" href={item.href} key={item.href}>
