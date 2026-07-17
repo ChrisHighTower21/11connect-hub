@@ -16,11 +16,12 @@ model Player {
   discordName       String?
   joinedAt          DateTime?
   isActive          Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  stats        PlayerMatchStat[]
-  matchSquads  MatchSquad[]
+  stats             PlayerMatchStat[]
+  matchSquads       MatchSquad[]
+  screenshots       MatchScreenshot[]
 }
 
 model Competition {
@@ -66,6 +67,22 @@ model Match {
   squad         MatchSquad[]
   playerStats   PlayerMatchStat[]
   screenshots   MatchScreenshot[]
+}
+model Player {
+  id                String   @id @default(cuid())
+  name              String
+  eaId              String?
+  mainPosition      String?
+  secondaryPosition String?
+  discordName       String?
+  joinedAt          DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  stats             PlayerMatchStat[]
+  matchSquads       MatchSquad[]
+  screenshots       MatchScreenshot[]
 }
 
 model MatchSquad {
@@ -126,29 +143,47 @@ model PlayerMatchStat {
   @@unique([matchId, playerId])
 }
 model MatchScreenshot {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   matchId   String
+  playerId  String?
 
   fileName  String
   filePath  String
   fileType  String?
   fileSize  Int?
 
-  category  String @default("OVERVIEW")
+  category  String  @default("PLAYER_STATS")
+  status    String  @default("UPLOADED")
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  match     Match @relation(fields: [matchId], references: [id])
+  match     Match   @relation(fields: [matchId], references: [id])
+  player    Player? @relation(fields: [playerId], references: [id])
+
   analyses  ScreenshotAnalysis[]
+
+  @@index([matchId])
+  @@index([playerId])
 }
 model ScreenshotAnalysis {
-  id           String   @id @default(cuid())
-  screenshotId String
+  id             String  @id @default(cuid())
+  screenshotId   String
 
-  rawText      String
-  status       String   @default("PENDING")
+  status         String  @default("PENDING")
+  rawText        String?
+  structuredData Json?
+  confidence     Float?
+  errorMessage   String?
 
-  createdAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  screenshot   MatchScreenshot @relation(fields: [screenshotId], references: [id])
+  screenshot MatchScreenshot @relation(
+    fields: [screenshotId],
+    references: [id],
+    onDelete: Cascade
+  )
+
+  @@index([screenshotId])
 }
