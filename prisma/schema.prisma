@@ -8,30 +8,30 @@ datasource db {
 }
 
 model Player {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   name              String
   eaId              String?
   mainPosition      String?
   secondaryPosition String?
   discordName       String?
   joinedAt          DateTime?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  stats             PlayerMatchStat[]
-  matchSquads       MatchSquad[]
-  screenshots       MatchScreenshot[]
+  stats       PlayerMatchStat[]
+  matchSquads MatchSquad[]
+  screenshots MatchScreenshot[]
 }
 
 model Competition {
-  id        String          @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   type      String
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  seasons   Season[]
+  seasons Season[]
 }
 
 model Season {
@@ -43,12 +43,12 @@ model Season {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  competition   Competition @relation(fields: [competitionId], references: [id])
-  matches       Match[]
+  competition Competition @relation(fields: [competitionId], references: [id])
+  matches     Match[]
 }
 
 model Match {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   seasonId      String
   matchDate     DateTime
   opponent      String
@@ -57,32 +57,16 @@ model Match {
   teamGoals     Int
   opponentGoals Int
   result        String
-  status        String @default("DRAFT")
+  status        String   @default("DRAFT")
   notes         String?
-  isArchived    Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  isArchived    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  season        Season            @relation(fields: [seasonId], references: [id])
-  squad         MatchSquad[]
-  playerStats   PlayerMatchStat[]
-  screenshots   MatchScreenshot[]
-}
-model Player {
-  id                String   @id @default(cuid())
-  name              String
-  eaId              String?
-  mainPosition      String?
-  secondaryPosition String?
-  discordName       String?
-  joinedAt          DateTime?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  stats             PlayerMatchStat[]
-  matchSquads       MatchSquad[]
-  screenshots       MatchScreenshot[]
+  season      Season            @relation(fields: [seasonId], references: [id])
+  squad       MatchSquad[]
+  playerStats PlayerMatchStat[]
+  screenshots MatchScreenshot[]
 }
 
 model MatchSquad {
@@ -91,23 +75,23 @@ model MatchSquad {
   playerId  String
   createdAt DateTime @default(now())
 
-  match     Match  @relation(fields: [matchId], references: [id])
-  player    Player @relation(fields: [playerId], references: [id])
+  match  Match  @relation(fields: [matchId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
 
   @@unique([matchId, playerId])
 }
 
 model PlayerMatchStat {
-  id        String @id @default(cuid())
-  matchId   String
-  playerId  String
+  id       String @id @default(cuid())
+  matchId  String
+  playerId String
 
-  position  String?
-  rating    Float
-  isPotm    Boolean @default(false)
+  position String?
+  rating   Float
+  isPotm   Boolean @default(false)
 
-  goals     Int @default(0)
-  assists   Int @default(0)
+  goals   Int @default(0)
+  assists Int @default(0)
 
   shots         Int   @default(0)
   shotAccuracy  Float @default(0)
@@ -137,49 +121,51 @@ model PlayerMatchStat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  match     Match  @relation(fields: [matchId], references: [id])
-  player    Player @relation(fields: [playerId], references: [id])
+  match  Match  @relation(fields: [matchId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
 
   @@unique([matchId, playerId])
 }
+
 model MatchScreenshot {
-  id        String  @id @default(cuid())
-  matchId   String
-  playerId  String?
+  id       String  @id @default(cuid())
+  matchId  String
+  playerId String?
 
-  fileName  String
-  filePath  String
-  fileType  String?
-  fileSize  Int?
+  fileName String
+  filePath String
+  fileType String?
+  fileSize Int?
 
-  category  String  @default("PLAYER_STATS")
-  status    String  @default("UPLOADED")
+  category String @default("PLAYER_STATS")
+  status   String @default("UPLOADED")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  match     Match   @relation(fields: [matchId], references: [id])
-  player    Player? @relation(fields: [playerId], references: [id])
+  match  Match   @relation(fields: [matchId], references: [id])
+  player Player? @relation(fields: [playerId], references: [id])
 
-  analyses  ScreenshotAnalysis[]
+  analyses ScreenshotAnalysis[]
 
   @@index([matchId])
   @@index([playerId])
 }
-model ScreenshotAnalysis {
-  id             String   @id @default(cuid())
-  screenshotId   String
 
-  status         String   @default("PENDING")
+model ScreenshotAnalysis {
+  id           String @id @default(cuid())
+  screenshotId String
+
+  status         String  @default("PENDING")
   rawText        String?
   structuredData Json?
   confidence     Float?
   errorMessage   String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  screenshot     MatchScreenshot @relation(fields: [screenshotId], references: [id], onDelete: Cascade)
+  screenshot MatchScreenshot @relation(fields: [screenshotId], references: [id], onDelete: Cascade)
 
   @@index([screenshotId])
 }
