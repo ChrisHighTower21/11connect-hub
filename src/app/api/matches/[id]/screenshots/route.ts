@@ -127,10 +127,10 @@ export async function POST(request: Request, { params }: RouteParams) {
     ].join("/");
 
     const blob = await put(blobPath, file, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: file.type,
-    });
+  access: "private",
+  addRandomSuffix: false,
+  contentType: file.type,
+});
 
     try {
       const screenshot = await prisma.matchScreenshot.create({
