@@ -2,22 +2,9 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { SquadManager } from "./SquadManager";
 import { StatsForm } from "./StatsForm";
-import { ScreenshotUpload } from "./ScreenshotUpload";
-import { DeleteScreenshotButton } from "./DeleteScreenshotButton";
-import ScreenshotAnalyzer from "./ScreenshotAnalyzer";
-import { ScreenshotPreview } from "./ScreenshotPreview";
 import { CollapsibleCard } from "@/components/CollapsibleCard";
+import { ScreenshotGallery } from "./screenshots/ScreenshotGallery";
 
-function getScreenshotCategoryLabel(category: string) {
-  if (category === "OVERVIEW") return "Übersicht";
-  if (category === "POSSESSION") return "Ballbesitz";
-  if (category === "SHOOTING") return "Schussverhalten";
-  if (category === "PASSING") return "Pässe";
-  if (category === "DEFENDING") return "Abwehr";
-  if (category === "GOALKEEPER") return "TW-Spiel";
-  if (category === "OTHER") return "Sonstiges";
-  return category;
-}
 
 function getStatusLabel(status: string) {
   if (status === "DRAFT") return "Entwurf";
@@ -585,85 +572,13 @@ export default async function MatchPage({ params }: MatchPageProps) {
         )}
       </div>
 
-      <CollapsibleCard
-  title="📷 Screenshots"
-  defaultOpen={false}
->
-  <ScreenshotUpload matchId={match.id} />
+      <CollapsibleCard title="📷 Screenshots" defaultOpen={false}>
+        <ScreenshotGallery
+          matchId={match.id}
+          screenshots={match.screenshots}
+        />
+      </CollapsibleCard>
 
-  {match.screenshots.length === 0 ? (
-    <p className="page-description" style={{ marginTop: 16 }}>
-      Noch keine Screenshots hochgeladen.
-    </p>
-  ) : (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))",
-        gap: 16,
-        marginTop: 16,
-      }}
-    >
-      {match.screenshots.map((screenshot) => (
-        <div key={screenshot.id} className="card">
-          <ScreenshotPreview
-  src={`/api/screenshots/${screenshot.id}/image`}
-  alt={screenshot.fileName}
-/>
-
-          <div
-            className="badge badge-status"
-            style={{ marginTop: 8, marginBottom: 8 }}
-          >
-            {getScreenshotCategoryLabel(screenshot.category)}
-          </div>
-
-          <div className="muted" style={{ fontSize: 13 }}>
-            {screenshot.fileName}
-          </div>
-
-          <div
-            className="muted"
-            style={{ fontSize: 12, marginTop: 4 }}
-          >
-            {new Date(screenshot.createdAt).toLocaleString("de-DE")}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 12,
-            }}
-          >
-            <ScreenshotAnalyzer screenshotId={screenshot.id} />
-            <DeleteScreenshotButton screenshotId={screenshot.id} />
-          </div>
-
-          {screenshot.analyses.length > 0 ? (
-            <div
-              className="card"
-              style={{
-                marginTop: 12,
-                background: "#111827",
-              }}
-            >
-              <div className="kpi-label">Analyse-Ergebnis</div>
-
-              <p
-                className="page-description"
-                style={{ marginTop: 8 }}
-              >
-                {screenshot.analyses[0].rawText}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  )}
-</CollapsibleCard>
-        
       <div className="card" style={{ marginTop: 24 }}>
         <div className="section-title">
           <h2>Kaderübersicht</h2>
