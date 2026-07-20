@@ -29,6 +29,7 @@ export function ScreenshotGallery({
 }: ScreenshotGalleryProps) {
   return (
     <div>
+
       <ScreenshotUpload matchId={matchId} />
 
       {screenshots.length === 0 ? (
