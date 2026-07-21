@@ -9,7 +9,6 @@ datasource db {
 
 model Player {
   id                String    @id @default(cuid())
-  name              String?   @ignore
   eaId              String    @unique
   shirtNumber       Int?
   mainPosition      String?
