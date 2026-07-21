@@ -18,7 +18,7 @@ export function DashboardSeasonFilter({
     <select
       value={currentSeasonId}
       onChange={(event) => {
-        window.location.href = `/?seasonId=${event.target.value}`;
+        window.location.href = `/dashboard?seasonId=${event.target.value}`;
       }}
     >
       {seasons.map((season) => (

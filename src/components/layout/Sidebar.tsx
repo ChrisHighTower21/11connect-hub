@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const navItems = [
-  { href: "/", label: "🏠 Dashboard" },
+  { href: "/dashboard", label: "🏠 Dashboard" },
   { href: "/players", label: "👥 Spieler" },
   { href: "/matches", label: "⚽ Spiele" },
   { href: "/seasons", label: "🏆 Wettbewerbe & Saisons" },
