@@ -113,13 +113,15 @@ function PlayerSlot({
           style={{
             position: "relative",
             width: "100%",
-            padding: 3,
-            borderRadius: 15,
+            height: 44,
+            display: "grid",
+            placeItems: "center",
+            borderRadius: 999,
             background: isOver
-              ? "rgba(56,189,248,0.85)"
-              : "rgba(255,255,255,0.08)",
+              ? "rgba(56,189,248,0.22)"
+              : "transparent",
             boxShadow: isOver
-              ? "0 0 0 4px rgba(56,189,248,0.3)"
+              ? "0 0 0 7px rgba(56,189,248,0.2)"
               : "none",
           }}
         >
@@ -127,7 +129,7 @@ function PlayerSlot({
             style={{
               position: "absolute",
               left: "50%",
-              top: -18,
+              top: -21,
               transform: "translateX(-50%)",
               padding: "2px 7px",
               borderRadius: 999,
@@ -153,8 +155,8 @@ function PlayerSlot({
             onClick={() => onRemovePlayer(player.id)}
             style={{
               position: "absolute",
-              top: -8,
-              right: -8,
+              top: -5,
+              left: "calc(50% + 11px)",
               width: 22,
               height: 22,
               display: "grid",

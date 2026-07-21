@@ -31,38 +31,65 @@ export function DraggablePlayerChip({
       {...listeners}
       {...attributes}
       style={{
-        width: "100%",
+        position: compact ? "relative" : undefined,
+        width: compact ? 44 : "100%",
+        height: compact ? 44 : undefined,
         minWidth: 0,
         display: "grid",
         gridTemplateColumns: compact
-          ? "32px minmax(0, 1fr)"
+          ? undefined
           : "40px minmax(0, 1fr)",
+        placeItems: compact ? "center" : undefined,
         alignItems: "center",
-        gap: compact ? 7 : 10,
-        padding: compact ? "6px 7px" : "9px 10px",
-        borderRadius: compact ? 12 : 14,
-        border: "1px solid rgba(125,211,252,0.48)",
-        background:
-          "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98))",
+        gap: compact ? 0 : 10,
+        padding: compact ? 0 : "9px 10px",
+        borderRadius: compact ? "50%" : 14,
+        border: compact
+          ? 0
+          : "1px solid rgba(125,211,252,0.48)",
+        background: compact
+          ? "transparent"
+          : "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.98))",
         color: "white",
         boxShadow: compact
-          ? "0 6px 16px rgba(0,0,0,0.28)"
+          ? "none"
           : "0 10px 24px rgba(0,0,0,0.3)",
         cursor: isDragging ? "grabbing" : "grab",
         opacity: isDragging ? 0.3 : 1,
         touchAction: "none",
-        textAlign: "left",
+        textAlign: compact ? "center" : "left",
+        overflow: "visible",
       }}
     >
       <PlayerAvatar
         player={player}
-        size={compact ? 32 : 40}
+        size={compact ? 44 : 40}
       />
 
-      <PlayerText
-        player={player}
-        compact={compact}
-      />
+      {compact ? (
+        <span
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "calc(100% + 5px)",
+            padding: "3px 7px",
+            transform: "translateX(-50%)",
+            border: "1px solid rgba(125,211,252,0.42)",
+            borderRadius: 999,
+            background: "rgba(2,6,23,0.9)",
+            color: "#ffffff",
+            boxShadow: "0 5px 14px rgba(0,0,0,0.3)",
+            fontSize: 10,
+            fontWeight: 800,
+            lineHeight: 1.2,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {player.eaId}
+        </span>
+      ) : (
+        <PlayerText player={player} />
+      )}
     </button>
   );
 }
@@ -74,15 +101,6 @@ type PlayerChipPreviewProps = {
 export function PlayerChipPreview({
   player,
 }: PlayerChipPreviewProps) {
-  const secondaryInformation = [
-    player.shirtNumber !== null
-      ? `#${player.shirtNumber}`
-      : null,
-    player.position,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
   return (
     <div
       style={{
@@ -97,45 +115,22 @@ export function PlayerChipPreview({
       <div
         style={{
           position: "absolute",
-          left: 58,
-          top: "50%",
-          minWidth: 150,
-          maxWidth: 220,
-          padding: "8px 11px",
-          transform: "translateY(-50%)",
-          borderRadius: 12,
-          border: "1px solid rgba(125,211,252,0.7)",
-          background: "#0f172a",
+          left: "50%",
+          top: 54,
+          padding: "4px 8px",
+          transform: "translateX(-50%)",
+          borderRadius: 999,
+          border: "1px solid rgba(125,211,252,0.6)",
+          background: "rgba(2,6,23,0.94)",
           color: "white",
-          boxShadow: "0 14px 36px rgba(0,0,0,0.45)",
+          boxShadow: "0 10px 24px rgba(0,0,0,0.4)",
+          fontSize: 11,
+          fontWeight: 900,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
         }}
       >
-        <div
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            fontSize: 13,
-            fontWeight: 900,
-          }}
-        >
-          {player.eaId}
-        </div>
-
-        {secondaryInformation ? (
-          <div
-            style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              marginTop: 2,
-              color: "#94a3b8",
-              fontSize: 10,
-            }}
-          >
-            {secondaryInformation}
-          </div>
-        ) : null}
+        {player.eaId}
       </div>
     </div>
   );
@@ -148,13 +143,6 @@ function PlayerAvatar({
   player: TacticPlayer;
   size: number;
 }) {
-  const initials = player.eaId
-    .split(/[\s_-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-
   return (
     <div
       style={{
@@ -172,17 +160,15 @@ function PlayerAvatar({
         boxShadow: "0 5px 14px rgba(37,99,235,0.35)",
       }}
     >
-      {player.shirtNumber ?? (initials || "11")}
+      {player.shirtNumber ?? "–"}
     </div>
   );
 }
 
 function PlayerText({
   player,
-  compact = false,
 }: {
   player: TacticPlayer;
-  compact?: boolean;
 }) {
   const secondaryInformation = [
     player.shirtNumber !== null
@@ -201,7 +187,7 @@ function PlayerText({
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
-          fontSize: compact ? 11 : 14,
+          fontSize: 14,
           fontWeight: 900,
           color: "#ffffff",
         }}
@@ -218,7 +204,7 @@ function PlayerText({
             whiteSpace: "nowrap",
             marginTop: 3,
             color: "#94a3b8",
-            fontSize: compact ? 9 : 11,
+            fontSize: 11,
           }}
         >
           {secondaryInformation}
