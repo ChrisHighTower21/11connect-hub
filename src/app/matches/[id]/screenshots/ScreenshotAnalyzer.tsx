@@ -113,51 +113,78 @@ setProgress(100);
 
     <table style={{ width: "100%", marginTop: 12 }}>
       <tbody>
-        <StatRow label="Spieler" value={parsedStats.playerName} />
-        <StatRow label="Bewertung" value={parsedStats.rating} />
-        <StatRow label="Tore" value={parsedStats.goals} />
-        <StatRow label="Vorlagen" value={parsedStats.assists} />
+  <StatRow label="Spieler" value={parsedStats.playerName} />
+  <StatRow label="Bewertung" value={parsedStats.rating} />
 
-        <StatRow
-          label="Schussgenauigkeit"
-          value={parsedStats.shotAccuracy}
-          suffix="%"
-        />
+  <StatRow label="Tore" value={parsedStats.goals} />
+  <StatRow label="Vorlagen" value={parsedStats.assists} />
 
-        <StatRow
-          label="Passgenauigkeit"
-          value={parsedStats.passAccuracy}
-          suffix="%"
-        />
+  <StatRow label="Schüsse" value={parsedStats.shots} />
 
-        <StatRow
-          label="Dribbling"
-          value={parsedStats.dribbleSuccessRate}
-          suffix="%"
-        />
+  <StatRow
+    label="Schussgenauigkeit"
+    value={parsedStats.shotAccuracy}
+    suffix="%"
+  />
 
-        <StatRow
-          label="Ballbesitz erobert"
-          value={parsedStats.possessionWon}
-        />
+  <StatRow label="Pässe" value={parsedStats.passes} />
 
-        <StatRow
-          label="Ballverluste"
-          value={parsedStats.possessionLost}
-        />
+  <StatRow
+    label="Passgenauigkeit"
+    value={parsedStats.passAccuracy}
+    suffix="%"
+  />
 
-        <StatRow
-          label="Laufleistung"
-          value={parsedStats.distanceKm}
-          suffix=" km"
-        />
+  <StatRow label="Dribblings" value={parsedStats.dribbles} />
 
-        <StatRow
-          label="Sprintdistanz"
-          value={parsedStats.sprintDistanceKm}
-          suffix=" km"
-        />
-      </tbody>
+  <StatRow
+    label="Dribbling-Erfolgsquote"
+    value={parsedStats.dribbleSuccessRate}
+    suffix="%"
+  />
+
+  <StatRow label="Zweikämpfe" value={parsedStats.tackles} />
+
+  <StatRow
+    label="Zweikampf-Erfolgsquote"
+    value={parsedStats.tackleSuccessRate}
+    suffix="%"
+  />
+
+  <StatRow label="Abseits" value={parsedStats.offsides} />
+
+  <StatRow
+    label="Begangene Fouls"
+    value={parsedStats.foulsCommitted}
+  />
+
+  <StatRow
+    label="Ballbesitz erobert"
+    value={parsedStats.possessionWon}
+  />
+
+  <StatRow
+    label="Ballverluste"
+    value={parsedStats.possessionLost}
+  />
+
+  <StatRow
+    label="Gespielte Minuten"
+    value={parsedStats.minutesPlayed}
+  />
+
+  <StatRow
+    label="Laufleistung"
+    value={parsedStats.distanceKm}
+    suffix=" km"
+  />
+
+  <StatRow
+    label="Sprintdistanz"
+    value={parsedStats.sprintDistanceKm}
+    suffix=" km"
+  />
+</tbody>
     </table>
   </div>
 ) : null}

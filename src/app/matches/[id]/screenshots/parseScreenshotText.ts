@@ -4,22 +4,25 @@ export type ParsedScreenshotStats = {
 
   goals: number | null;
   assists: number | null;
-
+  shots: number | null;
   shotAccuracy: number | null;
-  passesCompleted: number | null;
-  passesAttempted: number | null;
+
+  passes: number | null;
   passAccuracy: number | null;
 
-  dribblesCompleted: number | null;
-  dribblesAttempted: number | null;
+  dribbles: number | null;
   dribbleSuccessRate: number | null;
 
-  tacklesCompleted: number | null;
-  tacklesAttempted: number | null;
+  tackles: number | null;
+  tackleSuccessRate: number | null;
+
+  offsides: number | null;
+  foulsCommitted: number | null;
 
   possessionWon: number | null;
   possessionLost: number | null;
 
+  minutesPlayed: number | null;
   distanceKm: number | null;
   sprintDistanceKm: number | null;
 };
@@ -31,7 +34,6 @@ function normalizeText(text: string): string {
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
     .replace(/[ \t]+/g, " ")
-    .replace(/(\d),(\d)/g, "$1.$2")
     .trim();
 }
 
@@ -53,7 +55,27 @@ function parseNumber(value?: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function matchNumber(
+function matchPlayerColumn(
+  text: string,
+  labelPatterns: string[]
+): number | null {
+  for (const labelPattern of labelPatterns) {
+    const pattern = new RegExp(
+      `${labelPattern}[^\\d\\n]{0,30}(\\d+(?:[.,]\\d+)?)\\s+(\\d+(?:[.,]\\d+)?)`,
+      "i"
+    );
+
+    const match = text.match(pattern);
+
+    if (match?.[1]) {
+      return parseNumber(match[1]);
+    }
+  }
+
+  return null;
+}
+
+function matchSingleNumber(
   text: string,
   patterns: RegExp[]
 ): number | null {
@@ -61,54 +83,11 @@ function matchNumber(
     const match = text.match(pattern);
 
     if (match?.[1]) {
-      const value = parseNumber(match[1]);
-
-      if (value !== null) {
-        return value;
-      }
+      return parseNumber(match[1]);
     }
   }
 
   return null;
-}
-
-function matchPair(
-  text: string,
-  patterns: RegExp[]
-): {
-  completed: number | null;
-  attempted: number | null;
-} {
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-
-    if (match?.[1] && match?.[2]) {
-      return {
-        completed: parseNumber(match[1]),
-        attempted: parseNumber(match[2]),
-      };
-    }
-  }
-
-  return {
-    completed: null,
-    attempted: null,
-  };
-}
-
-function calculatePercentage(
-  completed: number | null,
-  attempted: number | null
-): number | null {
-  if (
-    completed === null ||
-    attempted === null ||
-    attempted <= 0
-  ) {
-    return null;
-  }
-
-  return Math.round((completed / attempted) * 100);
 }
 
 function extractPlayerName(text: string): string | null {
@@ -117,43 +96,13 @@ function extractPlayerName(text: string): string | null {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const ignoredTerms = [
-    "spielerleistung",
-    "übersicht",
-    "schussverhalten",
-    "player of the match",
-    "gesamtwert",
-    "tore",
-    "torvorlagen",
-    "pässe",
-    "passgenauigkeit",
-    "laufleistung",
-  ];
-
   for (const line of lines) {
-    const directMatch = line.match(
+    const match = line.match(
       /^\d{1,3}\s+([A-ZÄÖÜ][A-Za-zÄÖÜäöüß .'-]{2,30})$/
     );
 
-    if (directMatch?.[1]) {
-      return directMatch[1].trim();
-    }
-
-    const cleaned = line
-      .replace(/^\d{1,3}\s+/, "")
-      .replace(/\s+\d+(?:[.,]\d+)?$/, "")
-      .trim();
-
-    const lower = cleaned.toLowerCase();
-
-    const looksLikeName =
-      cleaned.length >= 3 &&
-      cleaned.length <= 35 &&
-      /^[A-Za-zÄÖÜäöüß .'-]+$/.test(cleaned) &&
-      !ignoredTerms.some((term) => lower.includes(term));
-
-    if (looksLikeName) {
-      return cleaned;
+    if (match?.[1]) {
+      return match[1].trim();
     }
   }
 
@@ -165,101 +114,84 @@ export function parseScreenshotText(
 ): ParsedScreenshotStats {
   const text = normalizeText(rawText);
 
-  const passes = matchPair(text, [
-    /pässe?\s+(\d+)\s*[/|von]+\s*(\d+)/i,
-    /pässe?\s+(\d+)\s+(\d+)/i,
-    /passe?\s+(\d+)\s+(\d+)/i,
-  ]);
-
-  const dribbles = matchPair(text, [
-    /dribbling[- ]?erfolgsquote.*?(\d+)\s*[/|von]+\s*(\d+)/i,
-    /dribblings?\s+(\d+)\s*[/|von]+\s*(\d+)/i,
-    /dribblings?\s+(\d+)\s+(\d+)/i,
-  ]);
-
-  const tackles = matchPair(text, [
-    /zweikämpfe?\s+(\d+)\s*[/|von]+\s*(\d+)/i,
-    /zweikampf.*?(\d+)\s+(\d+)/i,
-    /tacklings?\s+(\d+)\s*[/|von]+\s*(\d+)/i,
-  ]);
-
-  const explicitPassAccuracy = matchNumber(text, [
-    /passgenauigkeit[^0-9]{0,20}(\d{1,3})\s*%/i,
-    /passgenauigkeit[^0-9]{0,20}(\d{1,3})/i,
-  ]);
-
-  const explicitDribbleRate = matchNumber(text, [
-    /dribbling[- ]?erfolgsquote[^0-9]{0,20}(\d{1,3})\s*%/i,
-    /dribbling[- ]?erfolgsquote[^0-9]{0,20}(\d{1,3})/i,
-  ]);
-
   return {
     playerName: extractPlayerName(text),
 
-    rating: matchNumber(text, [
+    rating: matchSingleNumber(text, [
       /gesamtwert[^0-9]{0,20}(\d{1,2}[.,]\d)/i,
       /bewertung[^0-9]{0,20}(\d{1,2}[.,]\d)/i,
-      /note[^0-9]{0,20}(\d{1,2}[.,]\d)/i,
     ]),
 
-    goals: matchNumber(text, [
-      /(?:^|\n)\s*tore?[^0-9]{0,15}(\d+)/im,
-      /(?:^|\n)\s*goals?[^0-9]{0,15}(\d+)/im,
+    goals: matchPlayerColumn(text, [
+      "tore",
     ]),
 
-    assists: matchNumber(text, [
-      /torvorlagen?[^0-9]{0,15}(\d+)/i,
-      /assists?[^0-9]{0,15}(\d+)/i,
+    assists: matchPlayerColumn(text, [
+      "torvorlagen",
     ]),
 
-    shotAccuracy: matchNumber(text, [
-      /schussgenauigkeit[^0-9]{0,20}(\d{1,3})\s*%/i,
-      /schussgenauigkeit[^0-9]{0,20}(\d{1,3})/i,
+    shots: matchPlayerColumn(text, [
+      "schüsse",
+      "schusse",
     ]),
 
-    passesCompleted: passes.completed,
-    passesAttempted: passes.attempted,
-
-    passAccuracy:
-      explicitPassAccuracy ??
-      calculatePercentage(
-        passes.completed,
-        passes.attempted
-      ),
-
-    dribblesCompleted: dribbles.completed,
-    dribblesAttempted: dribbles.attempted,
-
-    dribbleSuccessRate:
-      explicitDribbleRate ??
-      calculatePercentage(
-        dribbles.completed,
-        dribbles.attempted
-      ),
-
-    tacklesCompleted: tackles.completed,
-    tacklesAttempted: tackles.attempted,
-
-    possessionWon: matchNumber(text, [
-      /ballbesitz\s+erobert[^0-9]{0,20}(\d+)/i,
-      /erobert[^0-9]{0,20}(\d+)/i,
-      /possession\s+won[^0-9]{0,20}(\d+)/i,
+    shotAccuracy: matchPlayerColumn(text, [
+      "schussgenauigkeit(?:\\s*\\(%\\))?",
     ]),
 
-    possessionLost: matchNumber(text, [
-      /ballverlust(?:e)?[^0-9]{0,20}(\d+)/i,
-      /possession\s+lost[^0-9]{0,20}(\d+)/i,
+    passes: matchPlayerColumn(text, [
+      "pässe",
+      "passe",
     ]),
 
-    distanceKm: matchNumber(text, [
-      /laufweg(?:e)?[^0-9]{0,25}(\d{1,3}[.,]\d+)\s*km/i,
-      /team[s]?chnitt[^0-9]{0,20}(\d{1,3}[.,]\d+)/i,
-      /distanz[^0-9]{0,20}(\d{1,3}[.,]\d+)\s*km/i,
+    passAccuracy: matchPlayerColumn(text, [
+      "passgenauigkeit(?:\\s*\\(%\\))?",
     ]),
 
-    sprintDistanceKm: matchNumber(text, [
-      /sprintdistanz[^0-9]{0,25}(\d{1,3}[.,]\d+)\s*km/i,
-      /sprintdistanz[^0-9]{0,25}(\d{1,3}[.,]\d+)/i,
+    dribbles: matchPlayerColumn(text, [
+      "dribblings",
+    ]),
+
+    dribbleSuccessRate: matchPlayerColumn(text, [
+      "dribbling[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+    ]),
+
+    tackles: matchPlayerColumn(text, [
+      "zweikämpfe",
+      "zweikampfe",
+    ]),
+
+    tackleSuccessRate: matchPlayerColumn(text, [
+      "zweikampf[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+    ]),
+
+    offsides: matchPlayerColumn(text, [
+      "abseits",
+    ]),
+
+    foulsCommitted: matchPlayerColumn(text, [
+      "begangene fouls",
+    ]),
+
+    possessionWon: matchPlayerColumn(text, [
+      "ballbesitz erobert",
+    ]),
+
+    possessionLost: matchPlayerColumn(text, [
+      "ballverlust",
+      "ballverluste",
+    ]),
+
+    minutesPlayed: matchPlayerColumn(text, [
+      "gespielte minuten(?:\\/teamschnitt)?",
+    ]),
+
+    distanceKm: matchPlayerColumn(text, [
+      "laufwege?(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
+    ]),
+
+    sprintDistanceKm: matchPlayerColumn(text, [
+      "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
     ]),
   };
 }
