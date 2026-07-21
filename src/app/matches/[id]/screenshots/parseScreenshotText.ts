@@ -105,9 +105,14 @@ function matchPlayerColumn(
       }
 
       const firstToken = tokens[0];
-      const normalizedToken = firstToken
-        .replace(/[OoQ]/g, "0")
-        .replace(/[Il|]/g, "1");
+
+if (!firstToken) {
+  continue;
+}
+
+const normalizedToken = firstToken
+  .replace(/[OoQ]/g, "0")
+  .replace(/[Il|]/g, "1");
 
       /*
        * OCR verbindet gelegentlich beide Spalten:
