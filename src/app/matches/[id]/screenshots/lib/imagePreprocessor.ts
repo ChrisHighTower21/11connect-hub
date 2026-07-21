@@ -10,7 +10,7 @@ export async function preprocessOverviewScreenshot(
   const sourceX = Math.round(image.naturalWidth * 0.66);
   const sourceY = Math.round(image.naturalHeight * 0.15);
   const sourceWidth = Math.round(image.naturalWidth * 0.32);
-  const sourceHeight = Math.round(image.naturalHeight * 0.72);
+  const sourceHeight = Math.round(image.naturalHeight * 0.80);
 
   /*
    * Für bessere OCR vergrößern wir den Ausschnitt.
