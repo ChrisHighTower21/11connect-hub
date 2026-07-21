@@ -158,34 +158,27 @@ function matchSingleNumber(
 }
 
 function matchBallverlust(text: string): number | null {
-  const match = text.match(
-    /ballverlust(?:e)?\s+([0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?)/i
-  );
+  const line = text
+    .split("\n")
+    .map((entry) => entry.trim())
+    .find((entry) => /ballverlust/i.test(entry));
 
-  if (!match?.[1]) {
+  if (!line) {
     return null;
   }
 
-  return normalizeOcrNumberToken(match[1]);
-}
+  const valueArea = line.replace(/^.*?ballverlust(?:e)?/i, "").trim();
 
-function extractPlayerName(text: string): string | null {
-  const lines = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const tokens =
+    valueArea.match(/[0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?/g) ?? [];
 
-  for (const line of lines) {
-    const match = line.match(
-      /^\d{1,3}\s+([A-ZÄÖÜ][A-Za-zÄÖÜäöüß .'-]{2,30})$/
-    );
+  const firstToken = tokens[0];
 
-    if (match?.[1]) {
-      return match[1].trim();
-    }
+  if (!firstToken) {
+    return null;
   }
 
-  return null;
+  return normalizeOcrNumberToken(firstToken);
 }
 
 export function parseScreenshotText(
