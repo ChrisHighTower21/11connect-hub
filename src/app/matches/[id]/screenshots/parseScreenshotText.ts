@@ -95,6 +95,10 @@ function matchPlayerColumn(
         labelMatch.index + labelMatch[0].length
       );
 
+if (/ballverlust/i.test(line)) {
+  console.log("Ballverlust-Zeile:", line);
+}
+
       const tokens =
         valueArea.match(
           /[0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?/g
