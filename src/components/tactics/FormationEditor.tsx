@@ -1,16 +1,20 @@
 "use client";
 
 import {
+  closestCenter,
   DndContext,
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+
 import { useMemo, useState } from "react";
 import { FootballPitch } from "./FootballPitch";
 import {
@@ -30,6 +34,22 @@ const formationOptions: FormationKey[] = [
   "4-4-2",
   "3-5-2",
 ];
+
+const pointerFirstCollisionDetection: CollisionDetection = (
+  args
+) => {
+  const pointerCollisions = pointerWithin(args);
+
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+
+  return closestCenter(args);
+};
+
+type FormationEditorProps = {
+  players: TacticPlayer[];
+};
 
 type FormationEditorProps = {
   players: TacticPlayer[];
@@ -282,15 +302,15 @@ export function FormationEditor({
   const assignedCount =
     assignedPlayerIds.size;
 
-  return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={() =>
-        setActivePlayerId(null)
-      }
-    >
+  <DndContext
+  sensors={sensors}
+  collisionDetection={pointerFirstCollisionDetection}
+  onDragStart={handleDragStart}
+  onDragEnd={handleDragEnd}
+  onDragCancel={() =>
+    setActivePlayerId(null)
+  }
+>
       <section
         style={{
           display: "grid",
