@@ -38,13 +38,74 @@ const formationOptions: FormationKey[] = [
 const pointerFirstCollisionDetection: CollisionDetection = (
   args
 ) => {
+  /*
+   * 1. Exakter Treffer unter dem Mauszeiger.
+   */
   const pointerCollisions = pointerWithin(args);
 
   if (pointerCollisions.length > 0) {
+    /*
+     * Positionsslots haben Vorrang vor größeren
+     * übergeordneten Droppable-Bereichen.
+     */
+    const slotCollision = pointerCollisions.find(
+      ({ id }) =>
+        String(id).startsWith("slot:")
+    );
+
+    if (slotCollision) {
+      return [slotCollision];
+    }
+
+    /*
+     * Beispielsweise der Mannschaftskader,
+     * wenn ein Spieler zurückgelegt wird.
+     */
     return pointerCollisions;
   }
 
-  return closestCenter(args);
+  /*
+   * Bei Tastatursteuerung gibt es keine
+   * Mauskoordinaten.
+   */
+  if (!args.pointerCoordinates) {
+    return closestCenter(args);
+  }
+
+  const { x, y } = args.pointerCoordinates;
+
+  /*
+   * 2. Falls die Maus knapp außerhalb eines
+   * Positionskreises liegt, verwenden wir einen
+   * virtuellen 0×0-Punkt exakt an der Mausposition.
+   *
+   * closestCenter vergleicht dadurch die Positionen
+   * mit dem Mauszeiger und nicht mehr mit der langen
+   * ursprünglichen Spielerkarte.
+   */
+  return closestCenter({
+    ...args,
+
+    collisionRect: {
+      ...args.collisionRect,
+      left: x,
+      right: x,
+      top: y,
+      bottom: y,
+      width: 0,
+      height: 0,
+    },
+
+    /*
+     * Beim toleranten Fallback dürfen nur echte
+     * Feldpositionen fokussiert werden.
+     */
+    droppableContainers:
+      args.droppableContainers.filter(
+        ({ id }) =>
+          String(id).startsWith("slot:")
+      ),
+  });
 };
 
 type FormationEditorProps = {
