@@ -331,7 +331,7 @@ function PenaltyArea({
           top: top
             ? "calc(16px + 16%)"
             : "calc(84% - 16px)",
-          width: "36%",
+          width: "29%",
           height: "10%",
           border: areaLine,
           borderRadius: "50%",
