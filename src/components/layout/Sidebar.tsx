@@ -6,9 +6,9 @@ const navItems = [
   { href: "/matches", label: "⚽ Spiele" },
   { href: "/seasons", label: "🏆 Wettbewerbe & Saisons" },
   { href: "/stats", label: "📊 Statistiken" },
-  { href: "/taktiken", label: "🧠 Taktiken" },
   { href: "/team", label: "📈 Teamstatistik" },
   { href: "/settings", label: "⚙️ Einstellungen" },
+  { href: "/taktiken", label: "🧠 Taktiken" },
 ];
 
 export function Sidebar() {
