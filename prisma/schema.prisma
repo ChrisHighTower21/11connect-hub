@@ -11,6 +11,7 @@ model Player {
   id                String    @id @default(cuid())
   name              String
   eaId              String?
+  shirtNumber       Int?
   mainPosition      String?
   secondaryPosition String?
   discordName       String?

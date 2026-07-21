@@ -7,6 +7,7 @@ type PlayerData = {
   id: string;
   name: string;
   eaId: string | null;
+  shirtNumber: number | null;
   mainPosition: string | null;
   secondaryPosition: string | null;
   discordName: string | null;
@@ -25,6 +26,9 @@ export function EditPlayerForm({
 
   const [name, setName] = useState(player.name);
   const [eaId, setEaId] = useState(player.eaId ?? "");
+  const [shirtNumber, setShirtNumber] = useState(
+    player.shirtNumber?.toString() ?? ""
+  );
   const [mainPosition, setMainPosition] = useState(
     player.mainPosition ?? ""
   );
@@ -64,6 +68,7 @@ export function EditPlayerForm({
           body: JSON.stringify({
             name: name.trim(),
             eaId: eaId.trim() || null,
+            shirtNumber: shirtNumber ? Number(shirtNumber) : null,
             mainPosition: mainPosition.trim() || null,
             secondaryPosition:
               secondaryPosition.trim() || null,
@@ -128,6 +133,22 @@ export function EditPlayerForm({
 
         <div className="form-row">
           <label>
+            Trikotnummer
+            <input
+              type="number"
+              min={1}
+              max={99}
+              step={1}
+              placeholder="z. B. 10"
+              value={shirtNumber}
+              onChange={(event) =>
+                setShirtNumber(event.target.value)
+              }
+              disabled={isSaving}
+            />
+          </label>
+
+          <label>
             Hauptposition
             <input
               type="text"
@@ -139,6 +160,9 @@ export function EditPlayerForm({
             />
           </label>
 
+        </div>
+
+        <div className="form-row">
           <label>
             Nebenposition
             <input
@@ -150,9 +174,6 @@ export function EditPlayerForm({
               disabled={isSaving}
             />
           </label>
-        </div>
-
-        <div className="form-row">
           <label>
             Discord-Name
             <input
@@ -165,6 +186,9 @@ export function EditPlayerForm({
             />
           </label>
 
+        </div>
+
+        <div className="form-row">
           <label>
             Eintrittsdatum
             <input

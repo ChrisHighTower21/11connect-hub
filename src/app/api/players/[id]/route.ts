@@ -112,6 +112,19 @@ export async function PATCH(
       );
     }
 
+    const shirtNumber = parseShirtNumber(body.shirtNumber);
+
+    if (shirtNumber === undefined) {
+      return NextResponse.json(
+        {
+          error: "Die Trikotnummer muss zwischen 1 und 99 liegen.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     let joinedAt: Date | null = null;
 
     if (body.joinedAt) {
@@ -139,6 +152,7 @@ export async function PATCH(
           typeof body.eaId === "string" && body.eaId.trim()
             ? body.eaId.trim()
             : null,
+        shirtNumber,
         mainPosition:
           typeof body.mainPosition === "string" &&
           body.mainPosition.trim()
@@ -175,6 +189,18 @@ export async function PATCH(
       }
     );
   }
+}
+
+function parseShirtNumber(value: unknown): number | null | undefined {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  return Number.isInteger(parsed) && parsed >= 1 && parsed <= 99
+    ? parsed
+    : undefined;
 }
 
 export async function DELETE(

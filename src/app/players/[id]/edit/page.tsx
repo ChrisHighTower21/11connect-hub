@@ -38,6 +38,7 @@ export default async function EditPlayerPage({
           id: player.id,
           name: player.name,
           eaId: player.eaId,
+          shirtNumber: player.shirtNumber,
           mainPosition: player.mainPosition,
           secondaryPosition: player.secondaryPosition,
           discordName: player.discordName,

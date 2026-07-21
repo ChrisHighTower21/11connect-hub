@@ -33,6 +33,7 @@ export default async function PlayersPage() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Trikotnr.</th>
               <th>EA-ID</th>
               <th>Hauptposition</th>
               <th>Nebenposition</th>
@@ -49,7 +50,7 @@ export default async function PlayersPage() {
           <tbody>
             {players.length === 0 ? (
               <tr>
-                <td colSpan={11}>Noch keine Spieler angelegt.</td>
+                <td colSpan={12}>Noch keine Spieler angelegt.</td>
               </tr>
             ) : (
               players.map((player) => {
@@ -81,6 +82,7 @@ export default async function PlayersPage() {
                       </Link>
                     </td>
 
+                    <td>{player.shirtNumber ?? "-"}</td>
                     <td>{player.eaId || "-"}</td>
                     <td>{player.mainPosition || "-"}</td>
                     <td>{player.secondaryPosition || "-"}</td>

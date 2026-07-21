@@ -8,6 +8,7 @@ export default function NewPlayerPage() {
 
   const [name, setName] = useState("");
   const [eaId, setEaId] = useState("");
+  const [shirtNumber, setShirtNumber] = useState("");
   const [mainPosition, setMainPosition] = useState("");
   const [secondaryPosition, setSecondaryPosition] = useState("");
   const [discordName, setDiscordName] = useState("");
@@ -36,6 +37,7 @@ export default function NewPlayerPage() {
         body: JSON.stringify({
           name: name.trim(),
           eaId: eaId.trim() || null,
+          shirtNumber: shirtNumber ? Number(shirtNumber) : null,
           mainPosition: mainPosition.trim() || null,
           secondaryPosition: secondaryPosition.trim() || null,
           discordName: discordName.trim() || null,
@@ -125,6 +127,21 @@ export default function NewPlayerPage() {
 
           <div className="form-row">
             <label>
+              Trikotnummer
+              <input
+                type="number"
+                name="shirtNumber"
+                min={1}
+                max={99}
+                step={1}
+                placeholder="z. B. 10"
+                value={shirtNumber}
+                onChange={(event) => setShirtNumber(event.target.value)}
+                disabled={isSaving}
+              />
+            </label>
+
+            <label>
               Hauptposition
               <input
                 type="text"
@@ -136,6 +153,9 @@ export default function NewPlayerPage() {
               />
             </label>
 
+          </div>
+
+          <div className="form-row">
             <label>
               Nebenposition
               <input
@@ -147,9 +167,6 @@ export default function NewPlayerPage() {
                 disabled={isSaving}
               />
             </label>
-          </div>
-
-          <div className="form-row">
             <label>
               Discord-ID
               <input
@@ -162,6 +179,9 @@ export default function NewPlayerPage() {
               />
             </label>
 
+          </div>
+
+          <div className="form-row">
             <label>
               Eintrittsdatum
               <input
