@@ -14,7 +14,6 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-
 import { useMemo, useState } from "react";
 import { FootballPitch } from "./FootballPitch";
 import {
@@ -51,10 +50,6 @@ type FormationEditorProps = {
   players: TacticPlayer[];
 };
 
-type FormationEditorProps = {
-  players: TacticPlayer[];
-};
-
 export function FormationEditor({
   players,
 }: FormationEditorProps) {
@@ -69,8 +64,7 @@ export function FormationEditor({
   const [activePlayerId, setActivePlayerId] =
     useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] =
-    useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -107,8 +101,10 @@ export function FormationEditor({
     [assignments]
   );
 
+  const assignedCount = assignedPlayerIds.size;
+
   const availablePlayerCount =
-    players.length - assignedPlayerIds.size;
+    players.length - assignedCount;
 
   const unassignedPlayers = useMemo(() => {
     const normalizedQuery = searchQuery
@@ -117,9 +113,7 @@ export function FormationEditor({
 
     return players
       .filter((player) => {
-        if (
-          assignedPlayerIds.has(player.id)
-        ) {
+        if (assignedPlayerIds.has(player.id)) {
           return false;
         }
 
@@ -134,8 +128,7 @@ export function FormationEditor({
         const nameMatches =
           player.name
             ?.toLocaleLowerCase("de")
-            .includes(normalizedQuery) ??
-          false;
+            .includes(normalizedQuery) ?? false;
 
         return eaIdMatches || nameMatches;
       })
@@ -156,8 +149,7 @@ export function FormationEditor({
   ]);
 
   const activePlayer = activePlayerId
-    ? playersById.get(activePlayerId) ??
-      null
+    ? playersById.get(activePlayerId) ?? null
     : null;
 
   function changeFormation(
@@ -167,9 +159,7 @@ export function FormationEditor({
 
     setAssignments((current) => {
       const next =
-        createEmptyAssignments(
-          nextFormation
-        );
+        createEmptyAssignments(nextFormation);
 
       for (const position of formationTemplates[
         nextFormation
@@ -214,9 +204,7 @@ export function FormationEditor({
       return;
     }
 
-    const targetId = String(
-      event.over.id
-    );
+    const targetId = String(event.over.id);
 
     if (targetId === "squad") {
       removePlayer(playerId);
@@ -227,8 +215,9 @@ export function FormationEditor({
       return;
     }
 
-    const targetSlotId =
-      targetId.slice("slot:".length);
+    const targetSlotId = targetId.slice(
+      "slot:".length
+    );
 
     const targetExists = positions.some(
       (position) =>
@@ -247,9 +236,7 @@ export function FormationEditor({
           current[slotId] === playerId
       );
 
-      if (
-        sourceSlotId === targetSlotId
-      ) {
+      if (sourceSlotId === targetSlotId) {
         return current;
       }
 
@@ -282,9 +269,7 @@ export function FormationEditor({
       for (const slotId of Object.keys(
         next
       )) {
-        if (
-          next[slotId] === playerId
-        ) {
+        if (next[slotId] === playerId) {
           next[slotId] = null;
         }
       }
@@ -299,18 +284,18 @@ export function FormationEditor({
     );
   }
 
-  const assignedCount =
-    assignedPlayerIds.size;
-
-  <DndContext
-  sensors={sensors}
-  collisionDetection={pointerFirstCollisionDetection}
-  onDragStart={handleDragStart}
-  onDragEnd={handleDragEnd}
-  onDragCancel={() =>
-    setActivePlayerId(null)
-  }
->
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={
+        pointerFirstCollisionDetection
+      }
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() =>
+        setActivePlayerId(null)
+      }
+    >
       <section
         style={{
           display: "grid",
@@ -322,8 +307,7 @@ export function FormationEditor({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent:
-              "space-between",
+            justifyContent: "space-between",
             gap: 18,
             flexWrap: "wrap",
           }}
@@ -348,8 +332,8 @@ export function FormationEditor({
                 fontSize: 13,
               }}
             >
-              {assignedCount} von 11
-              Positionen besetzt
+              {assignedCount} von 11 Positionen
+              besetzt
             </div>
           </div>
 
@@ -445,9 +429,7 @@ export function FormationEditor({
             availablePlayerCount={
               availablePlayerCount
             }
-            assignedCount={
-              assignedCount
-            }
+            assignedCount={assignedCount}
             searchQuery={searchQuery}
             onSearchQueryChange={
               setSearchQuery
@@ -641,8 +623,8 @@ function SquadPanel({
           fontSize: 12,
         }}
       >
-        Spieler hier ablegen, um ihn
-        vom Feld zu nehmen
+        Spieler hier ablegen, um ihn vom Feld
+        zu nehmen
       </div>
 
       <div
@@ -678,8 +660,8 @@ function SquadPanel({
               fontSize: 13,
             }}
           >
-            Alle verfügbaren Spieler
-            sind aufgestellt.
+            Alle verfügbaren Spieler sind
+            aufgestellt.
           </div>
         )}
       </div>
@@ -728,8 +710,8 @@ function NoSearchResults({
           overflowWrap: "anywhere",
         }}
       >
-        Kein verfügbarer Spieler passt
-        zu „{searchQuery.trim()}“.
+        Kein verfügbarer Spieler passt zu „
+        {searchQuery.trim()}“.
       </div>
     </div>
   );
@@ -771,8 +753,8 @@ function EmptySquad() {
           fontSize: 12,
         }}
       >
-        Lege zuerst Spieler im
-        Spielerbereich an.
+        Lege zuerst Spieler im Spielerbereich
+        an.
       </div>
     </div>
   );
