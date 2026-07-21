@@ -32,7 +32,7 @@ export function DraggablePlayerChip({
       {...attributes}
       style={{
         position: compact ? "relative" : undefined,
-        width: compact ? 44 : "100%",
+        width: compact ? 48 : "100%",
         height: compact ? 44 : undefined,
         minWidth: 0,
         display: "grid",
@@ -61,9 +61,9 @@ export function DraggablePlayerChip({
         overflow: "visible",
       }}
     >
-      <PlayerAvatar
+      <PlayerJersey
         player={player}
-        size={compact ? 44 : 40}
+        size={compact ? 48 : 40}
       />
 
       {compact ? (
@@ -110,7 +110,7 @@ export function PlayerChipPreview({
         pointerEvents: "none",
       }}
     >
-      <PlayerAvatar player={player} size={48} />
+      <PlayerJersey player={player} size={48} />
 
       <div
         style={{
@@ -136,31 +136,62 @@ export function PlayerChipPreview({
   );
 }
 
-function PlayerAvatar({
+function PlayerJersey({
   player,
   size,
 }: {
   player: TacticPlayer;
   size: number;
 }) {
+  const height = Math.round(size * 0.88);
+  const jerseyShape =
+    "polygon(40% 0, 33% 5%, 22% 9%, 0 25%, 13% 47%, 25% 39%, 25% 100%, 75% 100%, 75% 39%, 87% 47%, 100% 25%, 78% 9%, 67% 5%, 60% 0)";
+
   return (
     <div
       style={{
         width: size,
-        height: size,
+        height,
+        position: "relative",
         display: "grid",
         placeItems: "center",
         flexShrink: 0,
-        borderRadius: "50%",
+        clipPath: jerseyShape,
+        WebkitClipPath: jerseyShape,
         background:
-          "linear-gradient(135deg, #38bdf8, #2563eb)",
+          "linear-gradient(145deg, #38bdf8 0%, #2583ec 48%, #1d4ed8 100%)",
         color: "white",
-        fontSize: size <= 32 ? 11 : 13,
+        fontSize: size <= 40 ? 12 : 14,
         fontWeight: 900,
-        boxShadow: "0 5px 14px rgba(37,99,235,0.35)",
+        filter:
+          "drop-shadow(0 0 1px rgba(224,242,254,0.9)) drop-shadow(0 6px 8px rgba(0,0,0,0.32))",
       }}
     >
-      {player.shirtNumber ?? "–"}
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: 0,
+          width: "23%",
+          height: "13%",
+          transform: "translateX(-50%)",
+          borderRadius: "0 0 999px 999px",
+          background: "rgba(15,23,42,0.72)",
+        }}
+      />
+
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+          marginTop: "10%",
+          lineHeight: 1,
+          textShadow: "0 1px 3px rgba(0,0,0,0.38)",
+        }}
+      >
+        {player.shirtNumber ?? "–"}
+      </span>
     </div>
   );
 }
