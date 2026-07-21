@@ -155,6 +155,42 @@ export default async function DashboardPage({
         ).toFixed(2)
       : "-";
 
+  const previewPositions = [
+    { x: 10, y: 50 },
+    { x: 28, y: 23 },
+    { x: 27, y: 72 },
+    { x: 47, y: 37 },
+    { x: 55, y: 70 },
+    { x: 72, y: 25 },
+    { x: 84, y: 51 },
+  ];
+
+  const positionOrder = [
+    "TW",
+    "LV",
+    "LIV",
+    "IV",
+    "RIV",
+    "RV",
+    "LDM",
+    "ZDM",
+    "RDM",
+    "LM",
+    "ZOM",
+    "RM",
+    "LS",
+    "ST",
+    "RS",
+  ];
+
+  const tacticsPreviewPlayers = [...playersWithStats]
+    .sort(
+      (first, second) =>
+        positionOrder.indexOf(first.mainPosition ?? "") -
+        positionOrder.indexOf(second.mainPosition ?? "")
+    )
+    .slice(0, previewPositions.length);
+
   return (
     <>
       <header className="page-header">
@@ -178,6 +214,117 @@ export default async function DashboardPage({
           </Link>
         </div>
       </header>
+
+      <section className="dashboard-tactics-spotlight">
+        <div className="dashboard-tactics-copy">
+          <div className="dashboard-tactics-eyebrow">
+            <span>Neu</span>
+            Trainerwerkzeug
+          </div>
+
+          <h2>Spielzüge sehen, bevor sie passieren.</h2>
+
+          <p>
+            Plane Formationen, zeichne Laufwege und erkläre deinem Team jede
+            Variante direkt auf dem Spielfeld.
+          </p>
+
+          <div className="dashboard-tactics-actions">
+            <Link className="button dashboard-tactics-primary" href="/taktiktafel">
+              Taktiktafel öffnen <span aria-hidden="true">→</span>
+            </Link>
+            <Link className="dashboard-tactics-secondary" href="/taktiken">
+              Aufstellung bearbeiten
+            </Link>
+          </div>
+
+          <div className="dashboard-tactics-features">
+            <div>
+              <span aria-hidden="true">●</span>
+              <strong>Kader einsetzen</strong>
+              <small>Spieler und Nummern direkt übernehmen</small>
+            </div>
+            <div>
+              <span aria-hidden="true">➜</span>
+              <strong>Spielzüge zeichnen</strong>
+              <small>Pfeile, Laufwege und freie Linien</small>
+            </div>
+            <div>
+              <span aria-hidden="true">↶</span>
+              <strong>Varianten sichern</strong>
+              <small>Speichern, laden und rückgängig machen</small>
+            </div>
+            <div>
+              <span aria-hidden="true">↓</span>
+              <strong>Einfach teilen</strong>
+              <small>Besprechungsfertig als PNG exportieren</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-tactics-visual" aria-label="Vorschau der Taktiktafel">
+          <div className="dashboard-tactics-windowbar">
+            <div>
+              <span />
+              <span />
+              <span />
+            </div>
+            <strong>Angriff über rechts</strong>
+            <span>4-2-3-1</span>
+          </div>
+
+          <div className="dashboard-tactics-preview">
+            <div className="dashboard-preview-tools" aria-hidden="true">
+              <span className="active">↖</span>
+              <span>●</span>
+              <span>➜</span>
+              <span>⌁</span>
+              <span>✎</span>
+            </div>
+
+            <div className="dashboard-preview-pitch">
+              <span className="dashboard-preview-outline" />
+              <span className="dashboard-preview-halfway" />
+              <span className="dashboard-preview-center" />
+              <span className="dashboard-preview-center-dot" />
+              <span className="dashboard-preview-box dashboard-preview-box--left" />
+              <span className="dashboard-preview-box dashboard-preview-box--right" />
+              <span className="dashboard-preview-goalbox dashboard-preview-goalbox--left" />
+              <span className="dashboard-preview-goalbox dashboard-preview-goalbox--right" />
+              <span className="dashboard-preview-goal dashboard-preview-goal--left" />
+              <span className="dashboard-preview-goal dashboard-preview-goal--right" />
+
+              <span className="dashboard-preview-arrow dashboard-preview-arrow--one" />
+              <span className="dashboard-preview-arrow dashboard-preview-arrow--two" />
+              <span className="dashboard-preview-run dashboard-preview-run--one" />
+
+              {tacticsPreviewPlayers.map((player, index) => (
+                <span
+                  className={`dashboard-preview-player ${index === tacticsPreviewPlayers.length - 1 ? "dashboard-preview-player--focus" : ""}`}
+                  key={player.id}
+                  style={{
+                    left: `${previewPositions[index].x}%`,
+                    top: `${previewPositions[index].y}%`,
+                  }}
+                >
+                  <span>{player.shirtNumber ?? index + 1}</span>
+                  <small>{player.eaId}</small>
+                </span>
+              ))}
+
+              <span className="dashboard-preview-opponent" style={{ left: "49%", top: "19%" }}>4</span>
+              <span className="dashboard-preview-opponent" style={{ left: "64%", top: "49%" }}>6</span>
+              <span className="dashboard-preview-opponent" style={{ left: "78%", top: "72%" }}>3</span>
+              <span className="dashboard-preview-ball">⚽</span>
+            </div>
+
+            <div className="dashboard-preview-footer">
+              <span><i /> Automatisch gespeichert</span>
+              <span>3 Laufwege · 10 Spieler</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div
         className="card"
