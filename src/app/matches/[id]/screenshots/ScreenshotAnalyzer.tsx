@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { runScreenshotOcr } from "./lib/runOcr";
+import {
+  parseScreenshotText,
+  type ParsedScreenshotStats,
+} from "./parseScreenshotText";
 
 type ScreenshotAnalyzerProps = {
   screenshotId: string;
@@ -16,6 +20,8 @@ export function ScreenshotAnalyzer({
   const [text, setText] = useState("");
   const [confidence, setConfidence] = useState<number | null>(null);
   const [error, setError] = useState("");
+const [parsedStats, setParsedStats] =
+  useState<ParsedScreenshotStats | null>(null);
 
   async function analyze() {
     setIsAnalyzing(true);
@@ -24,6 +30,7 @@ export function ScreenshotAnalyzer({
     setText("");
     setConfidence(null);
     setError("");
+    setParsedStats(null);
 
     try {
       const result = await runScreenshotOcr(
@@ -34,10 +41,14 @@ export function ScreenshotAnalyzer({
         }
       );
 
-      setText(result.text);
-      setConfidence(result.confidence);
-      setStatus("Analyse abgeschlossen");
-      setProgress(100);
+      const parsed = parseScreenshotText(result.text);
+
+setText(result.text);
+setConfidence(result.confidence);
+setParsedStats(parsed);
+
+setStatus("Analyse abgeschlossen");
+setProgress(100);
     } catch (cause) {
       console.error("Screenshot-OCR fehlgeschlagen:", cause);
 
@@ -96,6 +107,101 @@ export function ScreenshotAnalyzer({
           </pre>
         </div>
       ) : null}
+{parsedStats ? (
+  <div className="card" style={{ background: "#111827" }}>
+    <div className="kpi-label">Erkannte Statistiken</div>
+
+    <table style={{ width: "100%", marginTop: 12 }}>
+      <tbody>
+        <StatRow label="Spieler" value={parsedStats.playerName} />
+        <StatRow label="Bewertung" value={parsedStats.rating} />
+        <StatRow label="Tore" value={parsedStats.goals} />
+        <StatRow label="Vorlagen" value={parsedStats.assists} />
+
+        <StatRow
+          label="Schussgenauigkeit"
+          value={parsedStats.shotAccuracy}
+          suffix="%"
+        />
+
+        <StatRow
+          label="Passgenauigkeit"
+          value={parsedStats.passAccuracy}
+          suffix="%"
+        />
+
+        <StatRow
+          label="Dribbling"
+          value={parsedStats.dribbleSuccessRate}
+          suffix="%"
+        />
+
+        <StatRow
+          label="Ballbesitz erobert"
+          value={parsedStats.possessionWon}
+        />
+
+        <StatRow
+          label="Ballverluste"
+          value={parsedStats.possessionLost}
+        />
+
+        <StatRow
+          label="Laufleistung"
+          value={parsedStats.distanceKm}
+          suffix=" km"
+        />
+
+        <StatRow
+          label="Sprintdistanz"
+          value={parsedStats.sprintDistanceKm}
+          suffix=" km"
+        />
+      </tbody>
+    </table>
+  </div>
+) : null}
     </div>
+  );
+}
+type StatRowProps = {
+  label: string;
+  value: string | number | null;
+  suffix?: string;
+};
+
+function StatRow({
+  label,
+  value,
+  suffix = "",
+}: StatRowProps) {
+  const hasValue =
+    value !== null &&
+    value !== undefined &&
+    value !== "";
+
+  return (
+    <tr>
+      <td
+        style={{
+          padding: "6px 0",
+          color: "#9ca3af",
+          width: "55%",
+          verticalAlign: "top",
+        }}
+      >
+        {label}
+      </td>
+
+      <td
+        style={{
+          padding: "6px 0",
+          fontWeight: 600,
+          verticalAlign: "top",
+        }}
+      >
+        {hasValue ? `${value}${suffix}` : "Nicht erkannt"}
+      </td>
+    </tr>
   );
 }
