@@ -1,5 +1,5 @@
 import { createWorker } from "tesseract.js";
-import { preprocessScreenshot } from "./imagePreprocessor";
+import { preprocessOverviewScreenshot } from "./imagePreprocessor";
 
 type ProgressUpdate = {
   status: string;
@@ -16,11 +16,13 @@ export async function runScreenshotOcr(
   onProgress?: (update: ProgressUpdate) => void
 ): Promise<OcrResult> {
   onProgress?.({
-    status: "Bild wird vorbereitet …",
+    status: "Statistikbereich wird zugeschnitten …",
     progress: 5,
   });
 
-  const preparedImage = await preprocessScreenshot(imageUrl);
+  const preparedImage =
+    await preprocessOverviewScreenshot(imageUrl);
+
   const objectUrl = URL.createObjectURL(preparedImage);
 
   let worker: Awaited<ReturnType<typeof createWorker>> | null = null;
@@ -30,11 +32,15 @@ export async function runScreenshotOcr(
       logger(message) {
         const nextProgress =
           typeof message.progress === "number"
-            ? Math.max(10, Math.round(message.progress * 100))
+            ? Math.max(
+                10,
+                Math.round(message.progress * 100)
+              )
             : 10;
 
         onProgress?.({
-          status: message.status || "Texterkennung läuft …",
+          status:
+            message.status || "Texterkennung läuft …",
           progress: nextProgress,
         });
       },

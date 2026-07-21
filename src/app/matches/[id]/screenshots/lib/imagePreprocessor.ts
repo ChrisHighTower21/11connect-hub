@@ -1,81 +1,107 @@
-const MAX_WIDTH = 2200;
-const SCALE_FACTOR = 2;
-
-export async function preprocessScreenshot(
+export async function preprocessOverviewScreenshot(
   imageUrl: string
 ): Promise<Blob> {
-  const response = await fetch(imageUrl, {
-    cache: "no-store",
-  });
+  const image = await loadImage(imageUrl);
 
-  if (!response.ok) {
-    throw new Error(
-      `Das Bild konnte nicht geladen werden (${response.status}).`
-    );
-  }
+  /*
+   * Nur der rechte Statistikbereich:
+   * Beschriftung + Spielerwert + Teamwert.
+   */
+  const sourceX = Math.round(image.naturalWidth * 0.66);
+  const sourceY = Math.round(image.naturalHeight * 0.15);
+  const sourceWidth = Math.round(image.naturalWidth * 0.32);
+  const sourceHeight = Math.round(image.naturalHeight * 0.72);
 
-  const sourceBlob = await response.blob();
-  const bitmap = await createImageBitmap(sourceBlob);
-
-  const desiredWidth = Math.min(
-    Math.round(bitmap.width * SCALE_FACTOR),
-    MAX_WIDTH
-  );
-
-  const scale = desiredWidth / bitmap.width;
-  const desiredHeight = Math.max(1, Math.round(bitmap.height * scale));
+  /*
+   * Für bessere OCR vergrößern wir den Ausschnitt.
+   */
+  const scale = 2;
 
   const canvas = document.createElement("canvas");
-  canvas.width = desiredWidth;
-  canvas.height = desiredHeight;
+  canvas.width = sourceWidth * scale;
+  canvas.height = sourceHeight * scale;
 
-  const context = canvas.getContext("2d", {
-    willReadFrequently: true,
-  });
+  const context = canvas.getContext("2d");
 
   if (!context) {
-    bitmap.close();
-    throw new Error("Die Bildverarbeitung konnte nicht gestartet werden.");
+    throw new Error("Canvas-Kontext konnte nicht erstellt werden.");
   }
 
-  context.drawImage(bitmap, 0, 0, desiredWidth, desiredHeight);
-  bitmap.close();
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
+  /*
+   * Kontrastreiche Graustufendarstellung.
+   */
   const imageData = context.getImageData(
     0,
     0,
-    desiredWidth,
-    desiredHeight
+    canvas.width,
+    canvas.height
   );
 
   const pixels = imageData.data;
 
   for (let index = 0; index < pixels.length; index += 4) {
-    const red = pixels[index];
-    const green = pixels[index + 1];
-    const blue = pixels[index + 2];
+    const red = pixels[index] ?? 0;
+    const green = pixels[index + 1] ?? 0;
+    const blue = pixels[index + 2] ?? 0;
 
-    const gray = 0.299 * red + 0.587 * green + 0.114 * blue;
-    const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+    const gray = Math.round(
+      red * 0.299 +
+      green * 0.587 +
+      blue * 0.114
+    );
 
-    pixels[index] = contrasted;
-    pixels[index + 1] = contrasted;
-    pixels[index + 2] = contrasted;
+    /*
+     * Helle Schrift weiß, Hintergrund schwarz.
+     */
+    const value = gray >= 115 ? 255 : 0;
+
+    pixels[index] = value;
+    pixels[index + 1] = value;
+    pixels[index + 2] = value;
   }
 
   context.putImageData(imageData, 0, 0);
 
-  return await new Promise<Blob>((resolve, reject) => {
+  return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("Das vorbereitete Bild konnte nicht erzeugt werden."));
+        if (!blob) {
+          reject(
+            new Error(
+              "Der Screenshot-Ausschnitt konnte nicht erzeugt werden."
+            )
+          );
+          return;
         }
+
+        resolve(blob);
       },
       "image/png",
       1
     );
+  });
+}
+
+function loadImage(imageUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+
+    image.onload = () => resolve(image);
+    image.onerror = () =>
+      reject(new Error("Der Screenshot konnte nicht geladen werden."));
+
+    image.src = imageUrl;
   });
 }
