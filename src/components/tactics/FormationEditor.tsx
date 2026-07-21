@@ -11,10 +11,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 import { FootballPitch } from "./FootballPitch";
 import {
   DraggablePlayerChip,
@@ -52,6 +49,9 @@ export function FormationEditor({
   const [activePlayerId, setActivePlayerId] =
     useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] =
+    useState("");
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -66,7 +66,10 @@ export function FormationEditor({
   const playersById = useMemo(
     () =>
       new Map(
-        players.map((player) => [player.id, player])
+        players.map((player) => [
+          player.id,
+          player,
+        ])
       ),
     [players]
   );
@@ -75,23 +78,66 @@ export function FormationEditor({
     () =>
       new Set(
         Object.values(assignments).filter(
-          (playerId): playerId is string =>
+          (
+            playerId
+          ): playerId is string =>
             Boolean(playerId)
         )
       ),
     [assignments]
   );
 
-  const unassignedPlayers = useMemo(
-    () =>
-      players.filter(
-        (player) => !assignedPlayerIds.has(player.id)
-      ),
-    [players, assignedPlayerIds]
-  );
+  const availablePlayerCount =
+    players.length - assignedPlayerIds.size;
+
+  const unassignedPlayers = useMemo(() => {
+    const normalizedQuery = searchQuery
+      .trim()
+      .toLocaleLowerCase("de");
+
+    return players
+      .filter((player) => {
+        if (
+          assignedPlayerIds.has(player.id)
+        ) {
+          return false;
+        }
+
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        const eaIdMatches = player.eaId
+          .toLocaleLowerCase("de")
+          .includes(normalizedQuery);
+
+        const nameMatches =
+          player.name
+            ?.toLocaleLowerCase("de")
+            .includes(normalizedQuery) ??
+          false;
+
+        return eaIdMatches || nameMatches;
+      })
+      .sort((first, second) =>
+        first.eaId.localeCompare(
+          second.eaId,
+          "de",
+          {
+            numeric: true,
+            sensitivity: "base",
+          }
+        )
+      );
+  }, [
+    players,
+    assignedPlayerIds,
+    searchQuery,
+  ]);
 
   const activePlayer = activePlayerId
-    ? playersById.get(activePlayerId) ?? null
+    ? playersById.get(activePlayerId) ??
+      null
     : null;
 
   function changeFormation(
@@ -101,12 +147,15 @@ export function FormationEditor({
 
     setAssignments((current) => {
       const next =
-        createEmptyAssignments(nextFormation);
+        createEmptyAssignments(
+          nextFormation
+        );
 
       for (const position of formationTemplates[
         nextFormation
       ]) {
-        const playerId = current[position.id];
+        const playerId =
+          current[position.id];
 
         if (playerId) {
           next[position.id] = playerId;
@@ -117,7 +166,9 @@ export function FormationEditor({
     });
   }
 
-  function handleDragStart(event: DragStartEvent) {
+  function handleDragStart(
+    event: DragStartEvent
+  ) {
     const playerId =
       event.active.data.current?.playerId;
 
@@ -128,7 +179,9 @@ export function FormationEditor({
     );
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  function handleDragEnd(
+    event: DragEndEvent
+  ) {
     setActivePlayerId(null);
 
     const playerId =
@@ -141,7 +194,9 @@ export function FormationEditor({
       return;
     }
 
-    const targetId = String(event.over.id);
+    const targetId = String(
+      event.over.id
+    );
 
     if (targetId === "squad") {
       removePlayer(playerId);
@@ -152,12 +207,12 @@ export function FormationEditor({
       return;
     }
 
-    const targetSlotId = targetId.slice(
-      "slot:".length
-    );
+    const targetSlotId =
+      targetId.slice("slot:".length);
 
     const targetExists = positions.some(
-      (position) => position.id === targetSlotId
+      (position) =>
+        position.id === targetSlotId
     );
 
     if (!targetExists) {
@@ -172,7 +227,9 @@ export function FormationEditor({
           current[slotId] === playerId
       );
 
-      if (sourceSlotId === targetSlotId) {
+      if (
+        sourceSlotId === targetSlotId
+      ) {
         return current;
       }
 
@@ -194,14 +251,20 @@ export function FormationEditor({
     });
   }
 
-  function removePlayer(playerId: string) {
+  function removePlayer(
+    playerId: string
+  ) {
     setAssignments((current) => {
       const next = {
         ...current,
       };
 
-      for (const slotId of Object.keys(next)) {
-        if (next[slotId] === playerId) {
+      for (const slotId of Object.keys(
+        next
+      )) {
+        if (
+          next[slotId] === playerId
+        ) {
           next[slotId] = null;
         }
       }
@@ -239,7 +302,8 @@ export function FormationEditor({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent:
+              "space-between",
             gap: 18,
             flexWrap: "wrap",
           }}
@@ -249,7 +313,11 @@ export function FormationEditor({
               Formation
             </div>
 
-            <h2 style={{ marginTop: 6 }}>
+            <h2
+              style={{
+                marginTop: 6,
+              }}
+            >
               Startaufstellung
             </h2>
 
@@ -260,8 +328,8 @@ export function FormationEditor({
                 fontSize: 13,
               }}
             >
-              {assignedCount} von 11 Positionen
-              besetzt
+              {assignedCount} von 11
+              Positionen besetzt
             </div>
           </div>
 
@@ -282,7 +350,9 @@ export function FormationEditor({
             >
               <span
                 className="muted"
-                style={{ fontSize: 12 }}
+                style={{
+                  fontSize: 12,
+                }}
               >
                 Formation
               </span>
@@ -352,7 +422,16 @@ export function FormationEditor({
           <SquadPanel
             players={unassignedPlayers}
             totalPlayers={players.length}
-            assignedCount={assignedCount}
+            availablePlayerCount={
+              availablePlayerCount
+            }
+            assignedCount={
+              assignedCount
+            }
+            searchQuery={searchQuery}
+            onSearchQueryChange={
+              setSearchQuery
+            }
           />
         </div>
       </section>
@@ -368,19 +447,32 @@ export function FormationEditor({
   );
 }
 
+type SquadPanelProps = {
+  players: TacticPlayer[];
+  totalPlayers: number;
+  availablePlayerCount: number;
+  assignedCount: number;
+  searchQuery: string;
+  onSearchQueryChange: (
+    value: string
+  ) => void;
+};
+
 function SquadPanel({
   players,
   totalPlayers,
+  availablePlayerCount,
   assignedCount,
-}: {
-  players: TacticPlayer[];
-  totalPlayers: number;
-  assignedCount: number;
-}) {
+  searchQuery,
+  onSearchQueryChange,
+}: SquadPanelProps) {
   const { setNodeRef, isOver } =
     useDroppable({
       id: "squad",
     });
+
+  const hasSearchQuery =
+    searchQuery.trim().length > 0;
 
   return (
     <aside
@@ -391,7 +483,8 @@ function SquadPanel({
         top: 20,
         display: "grid",
         gap: 14,
-        maxHeight: "calc(100vh - 50px)",
+        maxHeight:
+          "calc(100vh - 50px)",
         overflow: "hidden",
         borderColor: isOver
           ? "#38bdf8"
@@ -406,7 +499,11 @@ function SquadPanel({
           Mannschaftskader
         </div>
 
-        <h3 style={{ marginTop: 6 }}>
+        <h3
+          style={{
+            marginTop: 6,
+          }}
+        >
           Spieler
         </h3>
 
@@ -417,11 +514,97 @@ function SquadPanel({
             fontSize: 12,
           }}
         >
-          {players.length} verfügbar ·{" "}
-          {assignedCount} aufgestellt ·{" "}
+          {hasSearchQuery
+            ? `${players.length} Treffer · `
+            : null}
+
+          {availablePlayerCount} verfügbar
+          {" · "}
+          {assignedCount} aufgestellt
+          {" · "}
           {totalPlayers} gesamt
         </div>
       </div>
+
+      <label
+        style={{
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <span
+          className="muted"
+          style={{
+            fontSize: 12,
+          }}
+        >
+          Über EA-ID suchen
+        </span>
+
+        <div
+          style={{
+            position: "relative",
+          }}
+        >
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) =>
+              onSearchQueryChange(
+                event.target.value
+              )
+            }
+            placeholder="z. B. ChrisHighTower"
+            aria-label="Spieler über EA-ID suchen"
+            autoComplete="off"
+            style={{
+              width: "100%",
+              height: 42,
+              padding: searchQuery
+                ? "0 42px 0 12px"
+                : "0 12px",
+              borderRadius: 11,
+              border:
+                "1px solid rgba(148,163,184,0.35)",
+              background: "#0f172a",
+              color: "#ffffff",
+              outline: "none",
+            }}
+          />
+
+          {searchQuery ? (
+            <button
+              type="button"
+              onClick={() =>
+                onSearchQueryChange("")
+              }
+              aria-label="Suche zurücksetzen"
+              title="Suche zurücksetzen"
+              style={{
+                position: "absolute",
+                top: "50%",
+                right: 8,
+                width: 28,
+                height: 28,
+                display: "grid",
+                placeItems: "center",
+                transform:
+                  "translateY(-50%)",
+                border: 0,
+                borderRadius: "50%",
+                background:
+                  "rgba(51,65,85,0.85)",
+                color: "#cbd5e1",
+                cursor: "pointer",
+                fontSize: 17,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
+      </label>
 
       <div
         style={{
@@ -438,8 +621,8 @@ function SquadPanel({
           fontSize: 12,
         }}
       >
-        Spieler hier ablegen, um ihn vom Feld
-        zu nehmen
+        Spieler hier ablegen, um ihn
+        vom Feld zu nehmen
       </div>
 
       <div
@@ -459,6 +642,10 @@ function SquadPanel({
           ))
         ) : totalPlayers === 0 ? (
           <EmptySquad />
+        ) : hasSearchQuery ? (
+          <NoSearchResults
+            searchQuery={searchQuery}
+          />
         ) : (
           <div
             style={{
@@ -471,12 +658,60 @@ function SquadPanel({
               fontSize: 13,
             }}
           >
-            Alle verfügbaren Spieler sind
-            aufgestellt.
+            Alle verfügbaren Spieler
+            sind aufgestellt.
           </div>
         )}
       </div>
     </aside>
+  );
+}
+
+function NoSearchResults({
+  searchQuery,
+}: {
+  searchQuery: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: 22,
+        borderRadius: 14,
+        background:
+          "rgba(15,23,42,0.55)",
+        color: "#94a3b8",
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 28,
+        }}
+      >
+        🔎
+      </div>
+
+      <div
+        style={{
+          marginTop: 8,
+          color: "white",
+          fontWeight: 800,
+        }}
+      >
+        Keine EA-ID gefunden
+      </div>
+
+      <div
+        style={{
+          marginTop: 5,
+          fontSize: 12,
+          overflowWrap: "anywhere",
+        }}
+      >
+        Kein verfügbarer Spieler passt
+        zu „{searchQuery.trim()}“.
+      </div>
+    </div>
   );
 }
 
@@ -486,12 +721,19 @@ function EmptySquad() {
       style={{
         padding: 24,
         borderRadius: 14,
-        background: "rgba(15,23,42,0.55)",
+        background:
+          "rgba(15,23,42,0.55)",
         color: "#94a3b8",
         textAlign: "center",
       }}
     >
-      <div style={{ fontSize: 30 }}>👥</div>
+      <div
+        style={{
+          fontSize: 30,
+        }}
+      >
+        👥
+      </div>
 
       <div
         style={{
@@ -509,7 +751,8 @@ function EmptySquad() {
           fontSize: 12,
         }}
       >
-        Lege zuerst Spieler im Spielerbereich an.
+        Lege zuerst Spieler im
+        Spielerbereich an.
       </div>
     </div>
   );
@@ -520,7 +763,10 @@ function createEmptyAssignments(
 ): FormationAssignments {
   return Object.fromEntries(
     formationTemplates[formation].map(
-      (position) => [position.id, null]
+      (position) => [
+        position.id,
+        null,
+      ]
     )
   );
 }

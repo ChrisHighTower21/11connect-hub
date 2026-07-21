@@ -9,76 +9,85 @@ export default async function TacticsPage() {
     await prisma.player.findMany();
 
   const players: TacticPlayer[] = rawPlayers
-    .map((player, index) => {
-      /*
-       * Durch die flexible Zuordnung funktioniert
-       * die Seite mit unterschiedlichen Player-
-       * Feldnamen, ohne dass wir Prisma-Felder
-       * erraten müssen.
-       */
-      const record =
-        player as unknown as Record<
-          string,
-          unknown
-        >;
+  .map((player, index) => {
+    const record =
+      player as unknown as Record<string, unknown>;
 
-      const directName = readString(record, [
-        "gamertag",
-        "displayName",
-        "nickname",
-        "playerName",
-        "name",
-      ]);
+    const eaId = readString(record, [
+      "eaId",
+      "eaID",
+      "ea_id",
+      "gamertag",
+      "gameTag",
+    ]);
 
-      const firstName = readString(record, [
-        "firstName",
-        "firstname",
-        "givenName",
-      ]);
+    const directName = readString(record, [
+      "name",
+      "displayName",
+      "fullName",
+      "playerName",
+    ]);
 
-      const lastName = readString(record, [
-        "lastName",
-        "lastname",
-        "surname",
-        "familyName",
-      ]);
+    const firstName = readString(record, [
+      "firstName",
+      "firstname",
+      "givenName",
+    ]);
 
-      const fullName = [
-        firstName,
-        lastName,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+    const lastName = readString(record, [
+      "lastName",
+      "lastname",
+      "surname",
+      "familyName",
+    ]);
 
-      const fallbackName =
-        fullName ||
-        `Spieler ${index + 1}`;
+    const composedName = [
+      firstName,
+      lastName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
 
-      return {
-        id: String(
-          record.id ?? `player-${index}`
-        ),
-        name: directName ?? fallbackName,
-        position: readString(record, [
-          "position",
-          "primaryPosition",
-          "preferredPosition",
-          "role",
-        ]),
-        shirtNumber: readNumber(record, [
-          "shirtNumber",
-          "jerseyNumber",
-          "number",
-        ]),
-      };
-    })
-    .sort((first, second) =>
-      first.name.localeCompare(
-        second.name,
-        "de"
-      )
-    );
+    return {
+      id: String(
+        record.id ?? `player-${index}`
+      ),
+
+      eaId:
+        eaId ??
+        `EA-ID fehlt ${index + 1}`,
+
+      name:
+        directName ??
+        composedName ??
+        null,
+
+      position: readString(record, [
+        "mainPosition",
+        "primaryPosition",
+        "position",
+        "preferredPosition",
+        "role",
+      ]),
+
+      shirtNumber: readNumber(record, [
+        "shirtNumber",
+        "jerseyNumber",
+        "number",
+      ]),
+    };
+  })
+  .sort((first, second) =>
+    first.eaId.localeCompare(
+      second.eaId,
+      "de",
+      {
+        numeric: true,
+        sensitivity: "base",
+      }
+    )
+  );
 
   return (
     <main

@@ -149,7 +149,7 @@ function PlayerSlot({
 
           <button
             type="button"
-            aria-label={`${player.name} entfernen`}
+            aria-label={`${player.eaId} entfernen`}
             onClick={() => onRemovePlayer(player.id)}
             style={{
               position: "absolute",

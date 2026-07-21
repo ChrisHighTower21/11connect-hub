@@ -13,7 +13,19 @@ export type FormationPosition = {
 
 export type TacticPlayer = {
   id: string;
-  name: string;
+
+  /**
+   * Primäre sichtbare Spielerkennung.
+   * Danach wird gesucht und sortiert.
+   */
+  eaId: string;
+
+  /**
+   * Optionaler echter Name.
+   * Wird nur sekundär angezeigt.
+   */
+  name: string | null;
+
   position: string | null;
   shirtNumber: number | null;
 };

@@ -103,12 +103,12 @@ function PlayerAvatar({
   player: TacticPlayer;
   size: number;
 }) {
-  const initials = player.name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+  const initials = player.eaId
+  .split(/[\s_-]+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part.charAt(0).toUpperCase())
+  .join("");
 
   return (
     <div
@@ -139,10 +139,16 @@ function PlayerText({
   player: TacticPlayer;
   compact?: boolean;
 }) {
-  const meta = [
+  const secondaryInformation = [
+    player.name &&
+    player.name !== player.eaId
+      ? player.name
+      : null,
+
     player.shirtNumber !== null
       ? `#${player.shirtNumber}`
       : null,
+
     player.position,
   ]
     .filter(Boolean)
@@ -156,26 +162,27 @@ function PlayerText({
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
-          fontSize: compact ? 11 : 13,
-          fontWeight: 800,
+          fontSize: compact ? 11 : 14,
+          fontWeight: 900,
+          color: "#ffffff",
         }}
       >
-        {player.name}
+        {player.eaId}
       </span>
 
-      {meta ? (
+      {secondaryInformation ? (
         <span
           style={{
             display: "block",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            marginTop: 2,
+            marginTop: 3,
             color: "#94a3b8",
             fontSize: compact ? 9 : 11,
           }}
         >
-          {meta}
+          {secondaryInformation}
         </span>
       ) : null}
     </span>
