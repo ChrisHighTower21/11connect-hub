@@ -10,3 +10,15 @@ export type FormationPosition = {
   x: number;
   y: number;
 };
+
+export type TacticPlayer = {
+  id: string;
+  name: string;
+  position: string | null;
+  shirtNumber: number | null;
+};
+
+export type FormationAssignments = Record<
+  string,
+  string | null
+>;
