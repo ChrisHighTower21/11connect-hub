@@ -14,6 +14,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import { useMemo, useState } from "react";
 import { FootballPitch } from "./FootballPitch";
 import {
@@ -67,13 +68,9 @@ export function FormationEditor({
   const [searchQuery, setSearchQuery] = useState("");
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor)
-  );
+  useSensor(PointerSensor),
+  useSensor(KeyboardSensor)
+);
 
   const positions = formationTemplates[formation];
 
@@ -438,13 +435,16 @@ export function FormationEditor({
         </div>
       </section>
 
-      <DragOverlay>
-        {activePlayer ? (
-          <PlayerChipPreview
-            player={activePlayer}
-          />
-        ) : null}
-      </DragOverlay>
+      <DragOverlay
+  modifiers={[snapCenterToCursor]}
+  dropAnimation={null}
+>
+  {activePlayer ? (
+    <PlayerChipPreview
+      player={activePlayer}
+    />
+  ) : null}
+</DragOverlay>
     </DndContext>
   );
 }

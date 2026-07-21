@@ -74,79 +74,10 @@ type PlayerChipPreviewProps = {
 export function PlayerChipPreview({
   player,
 }: PlayerChipPreviewProps) {
-  return (
-    <div
-      style={{
-        width: 210,
-        display: "grid",
-        gridTemplateColumns: "42px minmax(0, 1fr)",
-        alignItems: "center",
-        gap: 10,
-        padding: 10,
-        borderRadius: 14,
-        border: "1px solid rgba(125,211,252,0.7)",
-        background: "#0f172a",
-        color: "white",
-        boxShadow: "0 18px 50px rgba(0,0,0,0.5)",
-      }}
-    >
-      <PlayerAvatar player={player} size={42} />
-      <PlayerText player={player} />
-    </div>
-  );
-}
-
-function PlayerAvatar({
-  player,
-  size,
-}: {
-  player: TacticPlayer;
-  size: number;
-}) {
-  const initials = player.eaId
-  .split(/[\s_-]+/)
-  .filter(Boolean)
-  .slice(0, 2)
-  .map((part) => part.charAt(0).toUpperCase())
-  .join("");
-
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        display: "grid",
-        placeItems: "center",
-        flexShrink: 0,
-        borderRadius: "50%",
-        background:
-          "linear-gradient(135deg, #38bdf8, #2563eb)",
-        color: "white",
-        fontSize: size <= 32 ? 11 : 13,
-        fontWeight: 900,
-        boxShadow: "0 5px 14px rgba(37,99,235,0.35)",
-      }}
-    >
-      {player.shirtNumber ?? (initials || "11")}
-    </div>
-  );
-}
-
-function PlayerText({
-  player,
-  compact = false,
-}: {
-  player: TacticPlayer;
-  compact?: boolean;
-}) {
   const secondaryInformation = [
     player.name &&
     player.name !== player.eaId
       ? player.name
-      : null,
-
-    player.shirtNumber !== null
-      ? `#${player.shirtNumber}`
       : null,
 
     player.position,
@@ -155,36 +86,65 @@ function PlayerText({
     .join(" · ");
 
   return (
-    <span style={{ minWidth: 0 }}>
-      <span
+    <div
+      style={{
+        position: "relative",
+        width: 48,
+        height: 48,
+        pointerEvents: "none",
+      }}
+    >
+      <PlayerAvatar
+        player={player}
+        size={48}
+      />
+
+      <div
         style={{
-          display: "block",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          fontSize: compact ? 11 : 14,
-          fontWeight: 900,
-          color: "#ffffff",
+          position: "absolute",
+          left: 58,
+          top: "50%",
+          minWidth: 150,
+          maxWidth: 220,
+          padding: "8px 11px",
+          transform: "translateY(-50%)",
+          borderRadius: 12,
+          border:
+            "1px solid rgba(125,211,252,0.7)",
+          background: "#0f172a",
+          color: "white",
+          boxShadow:
+            "0 14px 36px rgba(0,0,0,0.45)",
         }}
       >
-        {player.eaId}
-      </span>
-
-      {secondaryInformation ? (
-        <span
+        <div
           style={{
-            display: "block",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            marginTop: 3,
-            color: "#94a3b8",
-            fontSize: compact ? 9 : 11,
+            fontSize: 13,
+            fontWeight: 900,
           }}
         >
-          {secondaryInformation}
-        </span>
-      ) : null}
-    </span>
+          {player.eaId}
+        </div>
+
+        {secondaryInformation ? (
+          <div
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              marginTop: 2,
+              color: "#94a3b8",
+              fontSize: 10,
+            }}
+          >
+            {secondaryInformation}
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
+}
 }
