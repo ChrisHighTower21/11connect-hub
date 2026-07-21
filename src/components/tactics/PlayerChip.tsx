@@ -32,8 +32,8 @@ export function DraggablePlayerChip({
       {...attributes}
       style={{
         position: compact ? "relative" : undefined,
-        width: compact ? 48 : "100%",
-        height: compact ? 44 : undefined,
+        width: compact ? 64 : "100%",
+        height: compact ? 56 : undefined,
         minWidth: 0,
         display: "grid",
         gridTemplateColumns: compact
@@ -63,7 +63,7 @@ export function DraggablePlayerChip({
     >
       <PlayerJersey
         player={player}
-        size={compact ? 48 : 40}
+        size={compact ? 64 : 40}
       />
 
       {compact ? (
@@ -71,15 +71,15 @@ export function DraggablePlayerChip({
           style={{
             position: "absolute",
             left: "50%",
-            top: "calc(100% + 5px)",
-            padding: "3px 7px",
+            top: "calc(100% + 6px)",
+            padding: "4px 9px",
             transform: "translateX(-50%)",
             border: "1px solid rgba(125,211,252,0.42)",
             borderRadius: 999,
             background: "rgba(2,6,23,0.9)",
             color: "#ffffff",
             boxShadow: "0 5px 14px rgba(0,0,0,0.3)",
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 800,
             lineHeight: 1.2,
             whiteSpace: "nowrap",
@@ -105,26 +105,26 @@ export function PlayerChipPreview({
     <div
       style={{
         position: "relative",
-        width: 48,
-        height: 48,
+        width: 64,
+        height: 56,
         pointerEvents: "none",
       }}
     >
-      <PlayerJersey player={player} size={48} />
+      <PlayerJersey player={player} size={64} />
 
       <div
         style={{
           position: "absolute",
           left: "50%",
-          top: 54,
-          padding: "4px 8px",
+          top: 62,
+          padding: "4px 9px",
           transform: "translateX(-50%)",
           borderRadius: 999,
           border: "1px solid rgba(125,211,252,0.6)",
           background: "rgba(2,6,23,0.94)",
           color: "white",
           boxShadow: "0 10px 24px rgba(0,0,0,0.4)",
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 900,
           lineHeight: 1.2,
           whiteSpace: "nowrap",
@@ -161,7 +161,7 @@ function PlayerJersey({
         background:
           "linear-gradient(145deg, #38bdf8 0%, #2583ec 48%, #1d4ed8 100%)",
         color: "white",
-        fontSize: size <= 40 ? 12 : 14,
+        fontSize: size <= 40 ? 12 : 18,
         fontWeight: 900,
         filter:
           "drop-shadow(0 0 1px rgba(224,242,254,0.9)) drop-shadow(0 6px 8px rgba(0,0,0,0.32))",
