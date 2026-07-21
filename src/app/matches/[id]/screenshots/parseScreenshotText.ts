@@ -177,7 +177,7 @@ export function parseScreenshotText(
 ): ParsedScreenshotStats {
   const text = normalizeText(rawText);
 
-  return {
+    return {
     playerName: extractPlayerName(text),
 
     rating: matchSingleNumber(text, [
@@ -186,74 +186,73 @@ export function parseScreenshotText(
     ]),
 
     goals: matchPlayerColumn(text, [
-  "\\btore\\b",
-]),
+      "\\btore\\b",
+    ]),
 
-assists: matchPlayerColumn(text, [
-  "\\btorvorlagen?\\b",
-]),
+    assists: matchPlayerColumn(text, [
+      "\\btorvorlagen?\\b",
+    ]),
 
-shots: matchPlayerColumn(text, [
-  "\\bschüsse\\b",
-  "\\bschusse\\b",
-]),
+    shots: matchPlayerColumn(text, [
+      "\\bschüsse\\b",
+      "\\bschusse\\b",
+    ]),
 
-shotAccuracy: matchPlayerColumn(text, [
-  "schussgenauigkeit(?:\\s*\\(%\\))?",
-]),
+    shotAccuracy: matchPlayerColumn(text, [
+      "schussgenauigkeit(?:\\s*\\(%\\))?",
+    ]),
 
-passes: matchPlayerColumn(text, [
-  "\\bpässe\\b",
-  "\\bpasse\\b",
-]),
+    passes: matchPlayerColumn(text, [
+      "\\bpässe\\b",
+      "\\bpasse\\b",
+    ]),
 
-passAccuracy: matchPlayerColumn(text, [
-  "passgenauigkeit(?:\\s*\\(%\\))?",
-]),
+    passAccuracy: matchPlayerColumn(text, [
+      "passgenauigkeit(?:\\s*\\(%\\))?",
+    ]),
 
-dribbles: matchPlayerColumn(text, [
-  "\\bdribblings?\\b",
-]),
+    dribbles: matchPlayerColumn(text, [
+      "\\bdribblings?\\b",
+    ]),
 
-dribbleSuccessRate: matchPlayerColumn(text, [
-  "dribbling[- ]?erfolgsquote(?:\\s*\\(%\\))?",
-]),
+    dribbleSuccessRate: matchPlayerColumn(text, [
+      "dribbling[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+    ]),
 
-tackles: matchPlayerColumn(text, [
-  "\\bzweikämpfe\\b",
-  "\\bzweikampfe\\b",
-]),
+    tackles: matchPlayerColumn(text, [
+      "\\bzweikämpfe\\b",
+      "\\bzweikampfe\\b",
+    ]),
 
-tackleSuccessRate: matchPlayerColumn(text, [
-  "zweikampf[- ]?erfolgsquote(?:\\s*\\(%\\))?",
-]),
+    tackleSuccessRate: matchPlayerColumn(text, [
+      "zweikampf[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+    ]),
 
-offsides: matchPlayerColumn(text, [
-  "\\babseits\\b",
-]),
+    offsides: matchPlayerColumn(text, [
+      "\\babseits\\b",
+    ]),
 
-foulsCommitted: matchPlayerColumn(text, [
-  "begangene\\s+fouls",
-]),
+    foulsCommitted: matchPlayerColumn(text, [
+      "begangene\\s+fouls",
+    ]),
 
-possessionWon: matchPlayerColumn(text, [
-  "ballbesitz\\s+erobert",
-]),
+    possessionWon: matchPlayerColumn(text, [
+      "ballbesitz\\s+erobert",
+    ]),
 
-possessionLost: matchPlayerColumn(text, [
-  "\\bballverlust(?:e)?\\b",
-]),
+    possessionLost: matchPlayerColumn(text, [
+      "\\bballverlust(?:e)?\\b",
+    ]),
 
-minutesPlayed: matchPlayerColumn(text, [
-  "gespielte\\s+minuten(?:\\/teamschnitt)?",
-]),
+    minutesPlayed: matchPlayerColumn(text, [
+      "gespielte\\s+minuten(?:\\/teamschnitt)?",
+    ]),
 
-distanceKm: matchPlayerColumn(text, [
-  "laufwege?(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
-]),
+    distanceKm: matchPlayerColumn(text, [
+      "laufwege?(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
+    ]),
 
-sprintDistanceKm: matchPlayerColumn(text, [
-  "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
-]),
+    sprintDistanceKm: matchPlayerColumn(text, [
+      "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
+    ]),
   };
-}
