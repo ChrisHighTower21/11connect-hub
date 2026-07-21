@@ -9,6 +9,7 @@ const navItems = [
   { href: "/team", label: "📈 Teamstatistik" },
   { href: "/settings", label: "⚙️ Einstellungen" },
   { href: "/taktiken", label: "🧠 Taktiken" },
+  { href: "/taktiktafel", label: "🖊️ Taktiktafel" },
 ];
 
 export function Sidebar() {
