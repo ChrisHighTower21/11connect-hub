@@ -323,6 +323,28 @@ function PenaltyArea({
           transform: "translateX(-50%)",
         }}
       />
+
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: top
+            ? "calc(16px + 16%)"
+            : "calc(84% - 16px)",
+          width: "24%",
+          height: "10%",
+          border: areaLine,
+          borderRadius: "50%",
+          transform: "translate(-50%, -50%)",
+          clipPath: top
+            ? "inset(50% 0 0 0)"
+            : "inset(0 0 50% 0)",
+          WebkitClipPath: top
+            ? "inset(50% 0 0 0)"
+            : "inset(0 0 50% 0)",
+          pointerEvents: "none",
+        }}
+      />
     </>
   );
 }
