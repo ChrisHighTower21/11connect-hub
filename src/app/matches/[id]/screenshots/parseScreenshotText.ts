@@ -180,7 +180,24 @@ function matchBallverlust(text: string): number | null {
 
   return normalizeOcrNumberToken(firstToken);
 }
+function extractPlayerName(text: string): string | null {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
+  for (const line of lines) {
+    const match = line.match(
+      /^\d{1,3}\s+([A-ZÄÖÜ][A-Za-zÄÖÜäöüß .'-]{2,30})$/
+    );
+
+    if (match?.[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return null;
+}
 export function parseScreenshotText(
   rawText: string
 ): ParsedScreenshotStats {
