@@ -1,16 +1,22 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
+import {
+  jerseyStyles,
+  type JerseyStyleKey,
+} from "./jerseyStyles";
 import type { TacticPlayer } from "./types";
 
 type DraggablePlayerChipProps = {
   player: TacticPlayer;
   compact?: boolean;
+  jerseyStyle?: JerseyStyleKey;
 };
 
 export function DraggablePlayerChip({
   player,
   compact = false,
+  jerseyStyle = "blue",
 }: DraggablePlayerChipProps) {
   const {
     attributes,
@@ -64,6 +70,7 @@ export function DraggablePlayerChip({
       <PlayerJersey
         player={player}
         size={compact ? 64 : 40}
+        jerseyStyle={jerseyStyle}
       />
 
       {compact ? (
@@ -96,10 +103,12 @@ export function DraggablePlayerChip({
 
 type PlayerChipPreviewProps = {
   player: TacticPlayer;
+  jerseyStyle?: JerseyStyleKey;
 };
 
 export function PlayerChipPreview({
   player,
+  jerseyStyle = "blue",
 }: PlayerChipPreviewProps) {
   return (
     <div
@@ -110,7 +119,11 @@ export function PlayerChipPreview({
         pointerEvents: "none",
       }}
     >
-      <PlayerJersey player={player} size={64} />
+      <PlayerJersey
+        player={player}
+        size={64}
+        jerseyStyle={jerseyStyle}
+      />
 
       <div
         style={{
@@ -139,11 +152,14 @@ export function PlayerChipPreview({
 function PlayerJersey({
   player,
   size,
+  jerseyStyle,
 }: {
   player: TacticPlayer;
   size: number;
+  jerseyStyle: JerseyStyleKey;
 }) {
   const height = Math.round(size * 0.88);
+  const design = jerseyStyles[jerseyStyle];
   const jerseyShape =
     "polygon(40% 0, 33% 5%, 22% 9%, 0 25%, 13% 47%, 25% 39%, 25% 100%, 75% 100%, 75% 39%, 87% 47%, 100% 25%, 78% 9%, 67% 5%, 60% 0)";
 
@@ -158,9 +174,8 @@ function PlayerJersey({
         flexShrink: 0,
         clipPath: jerseyShape,
         WebkitClipPath: jerseyShape,
-        background:
-          "linear-gradient(145deg, #38bdf8 0%, #2583ec 48%, #1d4ed8 100%)",
-        color: "white",
+        background: design.background,
+        color: design.numberColor,
         fontSize: size <= 40 ? 12 : 18,
         fontWeight: 900,
         filter:
@@ -177,7 +192,7 @@ function PlayerJersey({
           height: "13%",
           transform: "translateX(-50%)",
           borderRadius: "0 0 999px 999px",
-          background: "rgba(15,23,42,0.72)",
+          background: design.collarColor,
         }}
       />
 
@@ -186,6 +201,10 @@ function PlayerJersey({
           position: "relative",
           zIndex: 1,
           marginTop: "10%",
+          minWidth: size <= 40 ? 20 : 28,
+          padding: size <= 40 ? "2px 4px" : "3px 6px",
+          borderRadius: 999,
+          background: design.numberBackground,
           lineHeight: 1,
           textShadow: "0 1px 3px rgba(0,0,0,0.38)",
         }}

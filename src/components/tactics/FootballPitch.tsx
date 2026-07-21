@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import {
   DraggablePlayerChip,
 } from "./PlayerChip";
+import type { JerseyStyleKey } from "./jerseyStyles";
 import type {
   FormationAssignments,
   FormationPosition,
@@ -14,6 +15,7 @@ type FootballPitchProps = {
   positions: FormationPosition[];
   players: TacticPlayer[];
   assignments: FormationAssignments;
+  jerseyStyle: JerseyStyleKey;
   onRemovePlayer: (playerId: string) => void;
 };
 
@@ -21,6 +23,7 @@ export function FootballPitch({
   positions,
   players,
   assignments,
+  jerseyStyle,
   onRemovePlayer,
 }: FootballPitchProps) {
   const playersById = new Map(
@@ -66,6 +69,7 @@ export function FootballPitch({
               key={position.id}
               position={position}
               player={player}
+              jerseyStyle={jerseyStyle}
               onRemovePlayer={onRemovePlayer}
             />
           );
@@ -78,12 +82,14 @@ export function FootballPitch({
 type PlayerSlotProps = {
   position: FormationPosition;
   player: TacticPlayer | null;
+  jerseyStyle: JerseyStyleKey;
   onRemovePlayer: (playerId: string) => void;
 };
 
 function PlayerSlot({
   position,
   player,
+  jerseyStyle,
   onRemovePlayer,
 }: PlayerSlotProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -147,6 +153,7 @@ function PlayerSlot({
           <DraggablePlayerChip
             player={player}
             compact
+            jerseyStyle={jerseyStyle}
           />
 
           <button

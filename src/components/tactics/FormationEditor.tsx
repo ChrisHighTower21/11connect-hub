@@ -22,6 +22,10 @@ import {
   PlayerChipPreview,
 } from "./PlayerChip";
 import { formationTemplates } from "./formationTemplates";
+import {
+  jerseyStyleOptions,
+  type JerseyStyleKey,
+} from "./jerseyStyles";
 import type {
   FormationAssignments,
   FormationKey,
@@ -34,6 +38,16 @@ const formationOptions: FormationKey[] = [
   "4-4-2",
   "3-5-2",
 ];
+
+const selectControlStyle = {
+  height: 42,
+  borderRadius: 11,
+  border: "1px solid rgba(148,163,184,0.35)",
+  background: "#0f172a",
+  color: "white",
+  padding: "0 12px",
+  fontWeight: 700,
+} as const;
 
 const pointerFirstCollisionDetection: CollisionDetection = (
   args
@@ -117,6 +131,9 @@ export function FormationEditor({
 }: FormationEditorProps) {
   const [formation, setFormation] =
     useState<FormationKey>("4-2-3-1");
+
+  const [jerseyStyle, setJerseyStyle] =
+    useState<JerseyStyleKey>("blue");
 
   const [assignments, setAssignments] =
     useState<FormationAssignments>(() =>
@@ -422,16 +439,7 @@ export function FormationEditor({
                       .value as FormationKey
                   )
                 }
-                style={{
-                  height: 42,
-                  borderRadius: 11,
-                  border:
-                    "1px solid rgba(148,163,184,0.35)",
-                  background: "#0f172a",
-                  color: "white",
-                  padding: "0 12px",
-                  fontWeight: 700,
-                }}
+                style={selectControlStyle}
               >
                 {formationOptions.map(
                   (option) => (
@@ -443,6 +451,43 @@ export function FormationEditor({
                     </option>
                   )
                 )}
+              </select>
+            </label>
+
+            <label
+              style={{
+                display: "grid",
+                gap: 6,
+                minWidth: 200,
+              }}
+            >
+              <span
+                className="muted"
+                style={{
+                  fontSize: 12,
+                }}
+              >
+                Trikotdesign
+              </span>
+
+              <select
+                value={jerseyStyle}
+                onChange={(event) =>
+                  setJerseyStyle(
+                    event.target
+                      .value as JerseyStyleKey
+                  )
+                }
+                style={selectControlStyle}
+              >
+                {jerseyStyleOptions.map((option) => (
+                  <option
+                    key={option.key}
+                    value={option.key}
+                  >
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -473,6 +518,7 @@ export function FormationEditor({
             positions={positions}
             players={players}
             assignments={assignments}
+            jerseyStyle={jerseyStyle}
             onRemovePlayer={removePlayer}
           />
 
@@ -483,6 +529,7 @@ export function FormationEditor({
               availablePlayerCount
             }
             assignedCount={assignedCount}
+            jerseyStyle={jerseyStyle}
             searchQuery={searchQuery}
             onSearchQueryChange={
               setSearchQuery
@@ -498,6 +545,7 @@ export function FormationEditor({
   {activePlayer ? (
     <PlayerChipPreview
       player={activePlayer}
+      jerseyStyle={jerseyStyle}
     />
   ) : null}
 </DragOverlay>
@@ -510,6 +558,7 @@ type SquadPanelProps = {
   totalPlayers: number;
   availablePlayerCount: number;
   assignedCount: number;
+  jerseyStyle: JerseyStyleKey;
   searchQuery: string;
   onSearchQueryChange: (
     value: string
@@ -521,6 +570,7 @@ function SquadPanel({
   totalPlayers,
   availablePlayerCount,
   assignedCount,
+  jerseyStyle,
   searchQuery,
   onSearchQueryChange,
 }: SquadPanelProps) {
@@ -696,6 +746,7 @@ function SquadPanel({
             <DraggablePlayerChip
               key={player.id}
               player={player}
+              jerseyStyle={jerseyStyle}
             />
           ))
         ) : totalPlayers === 0 ? (
