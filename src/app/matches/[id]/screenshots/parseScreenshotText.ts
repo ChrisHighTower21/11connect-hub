@@ -256,3 +256,4 @@ export function parseScreenshotText(
       "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
     ]),
   };
+}
