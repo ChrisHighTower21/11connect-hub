@@ -55,20 +55,83 @@ function parseNumber(value?: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeOcrNumberToken(token: string): number | null {
+  const normalized = token
+    .trim()
+    .replace(/[OoQ]/g, "0")
+    .replace(/[Il|]/g, "1")
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "");
+
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function matchPlayerColumn(
   text: string,
   labelPatterns: string[]
 ): number | null {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
   for (const labelPattern of labelPatterns) {
-    const pattern = new RegExp(
-      `${labelPattern}[^\\d\\n]{0,30}(\\d+(?:[.,]\\d+)?)\\s+(\\d+(?:[.,]\\d+)?)`,
-      "i"
-    );
+    const labelRegex = new RegExp(labelPattern, "i");
 
-    const match = text.match(pattern);
+    for (const line of lines) {
+      const labelMatch = line.match(labelRegex);
 
-    if (match?.[1]) {
-      return parseNumber(match[1]);
+      if (!labelMatch || labelMatch.index === undefined) {
+        continue;
+      }
+
+      const valueArea = line.slice(
+        labelMatch.index + labelMatch[0].length
+      );
+
+      const tokens =
+        valueArea.match(
+          /[0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?/g
+        ) ?? [];
+
+      if (tokens.length === 0) {
+        continue;
+      }
+
+      const firstToken = tokens[0];
+      const normalizedToken = firstToken
+        .replace(/[OoQ]/g, "0")
+        .replace(/[Il|]/g, "1");
+
+      /*
+       * OCR verbindet gelegentlich beide Spalten:
+       *
+       * Torvorlagen 04
+       *
+       * Das bedeutet:
+       * Spielerwert 0, Teamwert 4.
+       */
+      if (
+        tokens.length === 1 &&
+        !normalizedToken.includes(",") &&
+        !normalizedToken.includes(".") &&
+        normalizedToken.length >= 2 &&
+        normalizedToken.startsWith("0")
+      ) {
+        return 0;
+      }
+
+      const value = normalizeOcrNumberToken(firstToken);
+
+      if (value !== null) {
+        return value;
+      }
     }
   }
 
@@ -123,75 +186,74 @@ export function parseScreenshotText(
     ]),
 
     goals: matchPlayerColumn(text, [
-      "tore",
-    ]),
+  "\\btore\\b",
+]),
 
-    assists: matchPlayerColumn(text, [
-      "torvorlagen",
-    ]),
+assists: matchPlayerColumn(text, [
+  "\\btorvorlagen?\\b",
+]),
 
-    shots: matchPlayerColumn(text, [
-      "schüsse",
-      "schusse",
-    ]),
+shots: matchPlayerColumn(text, [
+  "\\bschüsse\\b",
+  "\\bschusse\\b",
+]),
 
-    shotAccuracy: matchPlayerColumn(text, [
-      "schussgenauigkeit(?:\\s*\\(%\\))?",
-    ]),
+shotAccuracy: matchPlayerColumn(text, [
+  "schussgenauigkeit(?:\\s*\\(%\\))?",
+]),
 
-    passes: matchPlayerColumn(text, [
-      "pässe",
-      "passe",
-    ]),
+passes: matchPlayerColumn(text, [
+  "\\bpässe\\b",
+  "\\bpasse\\b",
+]),
 
-    passAccuracy: matchPlayerColumn(text, [
-      "passgenauigkeit(?:\\s*\\(%\\))?",
-    ]),
+passAccuracy: matchPlayerColumn(text, [
+  "passgenauigkeit(?:\\s*\\(%\\))?",
+]),
 
-    dribbles: matchPlayerColumn(text, [
-      "dribblings",
-    ]),
+dribbles: matchPlayerColumn(text, [
+  "\\bdribblings?\\b",
+]),
 
-    dribbleSuccessRate: matchPlayerColumn(text, [
-      "dribbling[- ]?erfolgsquote(?:\\s*\\(%\\))?",
-    ]),
+dribbleSuccessRate: matchPlayerColumn(text, [
+  "dribbling[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+]),
 
-    tackles: matchPlayerColumn(text, [
-      "zweikämpfe",
-      "zweikampfe",
-    ]),
+tackles: matchPlayerColumn(text, [
+  "\\bzweikämpfe\\b",
+  "\\bzweikampfe\\b",
+]),
 
-    tackleSuccessRate: matchPlayerColumn(text, [
-      "zweikampf[- ]?erfolgsquote(?:\\s*\\(%\\))?",
-    ]),
+tackleSuccessRate: matchPlayerColumn(text, [
+  "zweikampf[- ]?erfolgsquote(?:\\s*\\(%\\))?",
+]),
 
-    offsides: matchPlayerColumn(text, [
-      "abseits",
-    ]),
+offsides: matchPlayerColumn(text, [
+  "\\babseits\\b",
+]),
 
-    foulsCommitted: matchPlayerColumn(text, [
-      "begangene fouls",
-    ]),
+foulsCommitted: matchPlayerColumn(text, [
+  "begangene\\s+fouls",
+]),
 
-    possessionWon: matchPlayerColumn(text, [
-      "ballbesitz erobert",
-    ]),
+possessionWon: matchPlayerColumn(text, [
+  "ballbesitz\\s+erobert",
+]),
 
-    possessionLost: matchPlayerColumn(text, [
-      "ballverlust",
-      "ballverluste",
-    ]),
+possessionLost: matchPlayerColumn(text, [
+  "\\bballverlust(?:e)?\\b",
+]),
 
-    minutesPlayed: matchPlayerColumn(text, [
-      "gespielte minuten(?:\\/teamschnitt)?",
-    ]),
+minutesPlayed: matchPlayerColumn(text, [
+  "gespielte\\s+minuten(?:\\/teamschnitt)?",
+]),
 
-    distanceKm: matchPlayerColumn(text, [
-      "laufwege?(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
-    ]),
+distanceKm: matchPlayerColumn(text, [
+  "laufwege?(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
+]),
 
-    sprintDistanceKm: matchPlayerColumn(text, [
-      "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
-    ]),
+sprintDistanceKm: matchPlayerColumn(text, [
+  "sprintdistanz(?:\\/teamschnitt)?(?:\\s*\\(km\\))?",
+]),
   };
 }
