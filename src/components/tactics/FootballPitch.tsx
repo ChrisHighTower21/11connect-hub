@@ -288,6 +288,8 @@ function PenaltyArea({
   top?: boolean;
   line: string;
 }) {
+  const areaLine = `2px solid ${line}`;
+
   return (
     <>
       <div
@@ -298,9 +300,10 @@ function PenaltyArea({
           bottom: top ? undefined : 16,
           width: "55%",
           height: "16%",
-          border: `2px solid ${line}`,
-          borderTop: top ? 0 : undefined,
-          borderBottom: top ? undefined : 0,
+          borderLeft: areaLine,
+          borderRight: areaLine,
+          borderTop: top ? 0 : areaLine,
+          borderBottom: top ? areaLine : 0,
           transform: "translateX(-50%)",
         }}
       />
@@ -313,9 +316,10 @@ function PenaltyArea({
           bottom: top ? undefined : 16,
           width: "24%",
           height: "7%",
-          border: `2px solid ${line}`,
-          borderTop: top ? 0 : undefined,
-          borderBottom: top ? undefined : 0,
+          borderLeft: areaLine,
+          borderRight: areaLine,
+          borderTop: top ? 0 : areaLine,
+          borderBottom: top ? areaLine : 0,
           transform: "translateX(-50%)",
         }}
       />
