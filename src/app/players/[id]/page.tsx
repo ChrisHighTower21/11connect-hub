@@ -206,10 +206,9 @@ const opponentStats = Object.values(
     <>
       <header className="page-header">
         <div>
-          <h1 className="page-title">{player.name}</h1>
+          <h1 className="page-title">{player.eaId}</h1>
           <p className="page-description">
-            {player.mainPosition ?? "Keine Position"} •{" "}
-            {player.eaId ?? "Keine EA-ID"}
+            {player.mainPosition ?? "Keine Position"}
           </p>
         </div>
 
@@ -250,12 +249,12 @@ const opponentStats = Object.values(
               fontWeight: 900,
             }}
           >
-            {player.name.slice(0, 2).toUpperCase()}
+            {player.shirtNumber ?? player.eaId.slice(0, 2).toUpperCase()}
           </div>
 
           <div>
             <div className="kpi-label">Spielerprofil</div>
-            <h2 style={{ fontSize: 34, margin: "8px 0" }}>{player.name}</h2>
+            <h2 style={{ fontSize: 34, margin: "8px 0" }}>{player.eaId}</h2>
             <p className="page-description">
               {activeSeason
                 ? `${activeSeason.eafcCycle} • ${activeSeason.competition.name} • ${activeSeason.name}`

@@ -6,12 +6,12 @@ import { useState } from "react";
 
 type PlayerActionsProps = {
   playerId: string;
-  playerName: string;
+  playerEaId: string;
 };
 
 export function PlayerActions({
   playerId,
-  playerName,
+  playerEaId,
 }: PlayerActionsProps) {
   const router = useRouter();
 
@@ -20,7 +20,7 @@ export function PlayerActions({
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Möchtest du den Spieler "${playerName}" wirklich löschen?\n\nAlle zugehörigen Leistungs- und Kaderdaten werden ebenfalls gelöscht.`
+      `Möchtest du den Spieler "${playerEaId}" wirklich löschen?\n\nAlle zugehörigen Leistungs- und Kaderdaten werden ebenfalls gelöscht.`
     );
 
     if (!confirmed) {

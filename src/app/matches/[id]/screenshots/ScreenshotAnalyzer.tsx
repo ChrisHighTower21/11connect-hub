@@ -113,7 +113,7 @@ setProgress(100);
 
     <table style={{ width: "100%", marginTop: 12 }}>
       <tbody>
-  <StatRow label="Spieler" value={parsedStats.playerName} />
+  <StatRow label="EA-ID" value={parsedStats.playerEaId} />
   <StatRow label="Bewertung" value={parsedStats.rating} />
 
   <StatRow label="Tore" value={parsedStats.goals} />

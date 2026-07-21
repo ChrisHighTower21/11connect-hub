@@ -11,7 +11,7 @@ export default async function PlayersPage() {
       stats: true,
     },
     orderBy: {
-      name: "asc",
+      eaId: "asc",
     },
   });
 
@@ -32,9 +32,8 @@ export default async function PlayersPage() {
         <table className="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Trikotnr.</th>
               <th>EA-ID</th>
+              <th>Trikotnr.</th>
               <th>Hauptposition</th>
               <th>Nebenposition</th>
               <th>Discord</th>
@@ -50,7 +49,7 @@ export default async function PlayersPage() {
           <tbody>
             {players.length === 0 ? (
               <tr>
-                <td colSpan={12}>Noch keine Spieler angelegt.</td>
+                <td colSpan={11}>Noch keine Spieler angelegt.</td>
               </tr>
             ) : (
               players.map((player) => {
@@ -78,12 +77,10 @@ export default async function PlayersPage() {
                   <tr key={player.id}>
                     <td>
                       <Link href={`/players/${player.id}`}>
-                        {player.name}
+                        {player.eaId}
                       </Link>
                     </td>
-
                     <td>{player.shirtNumber ?? "-"}</td>
-                    <td>{player.eaId || "-"}</td>
                     <td>{player.mainPosition || "-"}</td>
                     <td>{player.secondaryPosition || "-"}</td>
                     <td>{player.discordName || "-"}</td>
@@ -108,7 +105,7 @@ export default async function PlayersPage() {
                     <td>
                       <PlayerActions
                         playerId={player.id}
-                        playerName={player.name}
+                        playerEaId={player.eaId}
                       />
                     </td>
                   </tr>

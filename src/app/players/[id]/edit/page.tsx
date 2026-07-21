@@ -28,7 +28,7 @@ export default async function EditPlayerPage({
           <h1 className="page-title">Spieler bearbeiten</h1>
 
           <p className="page-description">
-            Stammdaten von {player.name} aktualisieren.
+            Stammdaten von {player.eaId} aktualisieren.
           </p>
         </div>
       </header>
@@ -36,7 +36,6 @@ export default async function EditPlayerPage({
       <EditPlayerForm
         player={{
           id: player.id,
-          name: player.name,
           eaId: player.eaId,
           shirtNumber: player.shirtNumber,
           mainPosition: player.mainPosition,

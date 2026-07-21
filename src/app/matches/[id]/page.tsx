@@ -64,7 +64,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
       isActive: true,
     },
     orderBy: {
-      name: "asc",
+      eaId: "asc",
     },
   });
 
@@ -76,7 +76,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
 
   const playerStatsWithPlayers = match.playerStats.map((stat) => ({
     ...stat,
-    playerName: stat.player?.name ?? "Unbekannt",
+    playerEaId: stat.player?.eaId ?? "Unbekannt",
   }));
 
   const matchRanking = [...playerStatsWithPlayers].sort(
@@ -243,7 +243,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
             <div className="card">
               <div className="kpi-label">⭐ MVP</div>
               <div className="kpi-value" style={{ fontSize: 22 }}>
-                {potm ? potm.player.name : "-"}
+                {potm ? potm.player.eaId : "-"}
               </div>
               <div className="muted">
                 {potm ? `${potm.rating.toFixed(1)} Bewertung` : "Noch keine Stats"}
@@ -262,7 +262,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
         <div className="card">
           <div className="kpi-label">Top Torschütze</div>
           <div className="kpi-value" style={{ fontSize: 22 }}>
-            {topScorer ? topScorer.playerName : "-"}
+            {topScorer ? topScorer.playerEaId : "-"}
           </div>
           <div className="muted">
             {topScorer ? `${topScorer.goals} Tore` : "Keine Tore"}
@@ -272,7 +272,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
         <div className="card">
           <div className="kpi-label">Top Assist</div>
           <div className="kpi-value" style={{ fontSize: 22 }}>
-            {topAssist ? topAssist.playerName : "-"}
+            {topAssist ? topAssist.playerEaId : "-"}
           </div>
           <div className="muted">
             {topAssist ? `${topAssist.assists} Vorlagen` : "Keine Vorlagen"}
@@ -311,7 +311,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
             <div className="card">
               <div className="kpi-label">⭐ MVP</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
-                {matchMvp?.playerName ?? "-"}
+                {matchMvp?.playerEaId ?? "-"}
               </div>
               <div className="page-description">
                 {matchMvp ? `${matchMvp.rating.toFixed(1)} Bewertung` : "-"}
@@ -321,7 +321,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
             <div className="card">
               <div className="kpi-label">⚽ Top Scorer</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
-                {topScorer ? topScorer.playerName : "-"}
+                {topScorer ? topScorer.playerEaId : "-"}
               </div>
               <div className="page-description">
                 {topScorer ? `${topScorer.goals} Tore` : "Keine Tore erfasst"}
@@ -331,7 +331,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
             <div className="card">
               <div className="kpi-label">🎯 Playmaker</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
-                {topAssist ? topAssist.playerName : "-"}
+                {topAssist ? topAssist.playerEaId : "-"}
               </div>
               <div className="page-description">
                 {topAssist
@@ -344,7 +344,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               <div className="kpi-label">🏃 Laufmaschine</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
                 {distanceLeader && distanceLeader.distanceKm > 0
-                  ? distanceLeader.playerName
+                  ? distanceLeader.playerEaId
                   : "-"}
               </div>
               <div className="page-description">
@@ -358,7 +358,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               <div className="kpi-label">⚡ Sprintkönig</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
                 {sprintLeader && sprintLeader.sprintDistanceKm > 0
-                  ? sprintLeader.playerName
+                  ? sprintLeader.playerEaId
                   : "-"}
               </div>
               <div className="page-description">
@@ -372,7 +372,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               <div className="kpi-label">🛡 Ballgewinne</div>
               <div className="kpi-value" style={{ fontSize: 24 }}>
                 {possessionLeader && possessionLeader.possessionWon > 0
-                  ? possessionLeader.playerName
+                  ? possessionLeader.playerEaId
                   : "-"}
               </div>
               <div className="page-description">
@@ -495,7 +495,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               {matchRanking.map((stat, index) => (
                 <tr key={stat.id}>
                   <td>{index + 1}</td>
-                  <td>{stat.playerName}</td>
+                  <td>{stat.playerEaId}</td>
                   <td>{stat.position ?? stat.player.mainPosition ?? "-"}</td>
                   <td>{stat.rating.toFixed(1)}</td>
                   <td>{stat.goals}</td>
@@ -523,7 +523,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
               <div key={stat.id} className="card">
                 <div className="section-title">
                   <div>
-                    <h2>{stat.playerName}</h2>
+                    <h2>{stat.playerEaId}</h2>
                     <p className="page-description">
                       {stat.position ?? stat.player.mainPosition ?? "Keine Position"}
                     </p>
@@ -606,7 +606,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
 
                 return (
                   <tr key={entry.id}>
-                    <td>{entry.player.name}</td>
+                    <td>{entry.player.eaId}</td>
                     <td>{stat?.position ?? entry.player.mainPosition ?? "-"}</td>
                     <td>{stat ? stat.rating.toFixed(1) : "-"}</td>
                     <td>{stat ? stat.goals : "-"}</td>

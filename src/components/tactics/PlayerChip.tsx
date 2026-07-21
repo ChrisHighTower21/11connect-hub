@@ -75,8 +75,8 @@ export function PlayerChipPreview({
   player,
 }: PlayerChipPreviewProps) {
   const secondaryInformation = [
-    player.name && player.name !== player.eaId
-      ? player.name
+    player.shirtNumber !== null
+      ? `#${player.shirtNumber}`
       : null,
     player.position,
   ]
@@ -185,9 +185,6 @@ function PlayerText({
   compact?: boolean;
 }) {
   const secondaryInformation = [
-    player.name && player.name !== player.eaId
-      ? player.name
-      : null,
     player.shirtNumber !== null
       ? `#${player.shirtNumber}`
       : null,

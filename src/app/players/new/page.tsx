@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 export default function NewPlayerPage() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
   const [eaId, setEaId] = useState("");
   const [shirtNumber, setShirtNumber] = useState("");
   const [mainPosition, setMainPosition] = useState("");
@@ -20,8 +19,8 @@ export default function NewPlayerPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!name.trim()) {
-      setError("Bitte gib einen Spielernamen ein.");
+    if (!eaId.trim()) {
+      setError("Bitte gib eine EA-ID ein.");
       return;
     }
 
@@ -35,8 +34,7 @@ export default function NewPlayerPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: name.trim(),
-          eaId: eaId.trim() || null,
+          eaId: eaId.trim(),
           shirtNumber: shirtNumber ? Number(shirtNumber) : null,
           mainPosition: mainPosition.trim() || null,
           secondaryPosition: secondaryPosition.trim() || null,
@@ -100,19 +98,6 @@ export default function NewPlayerPage() {
         <form className="form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label>
-              Spielername
-              <input
-                type="text"
-                name="name"
-                placeholder=""
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                disabled={isSaving}
-                required
-              />
-            </label>
-
-            <label>
               EA-ID
               <input
                 type="text"
@@ -121,11 +106,10 @@ export default function NewPlayerPage() {
                 value={eaId}
                 onChange={(event) => setEaId(event.target.value)}
                 disabled={isSaving}
+                required
               />
             </label>
-          </div>
 
-          <div className="form-row">
             <label>
               Trikotnummer
               <input
@@ -140,7 +124,9 @@ export default function NewPlayerPage() {
                 disabled={isSaving}
               />
             </label>
+          </div>
 
+          <div className="form-row">
             <label>
               Hauptposition
               <input
@@ -152,10 +138,6 @@ export default function NewPlayerPage() {
                 disabled={isSaving}
               />
             </label>
-
-          </div>
-
-          <div className="form-row">
             <label>
               Nebenposition
               <input
@@ -167,6 +149,9 @@ export default function NewPlayerPage() {
                 disabled={isSaving}
               />
             </label>
+          </div>
+
+          <div className="form-row">
             <label>
               Discord-ID
               <input
@@ -178,10 +163,6 @@ export default function NewPlayerPage() {
                 disabled={isSaving}
               />
             </label>
-
-          </div>
-
-          <div className="form-row">
             <label>
               Eintrittsdatum
               <input

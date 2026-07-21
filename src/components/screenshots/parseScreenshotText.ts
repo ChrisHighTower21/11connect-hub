@@ -1,5 +1,5 @@
 export type ParsedScreenshotStats = {
-  playerName: string | null;
+  playerEaId: string | null;
   rating: number | null;
 
   goals: number | null;
@@ -111,7 +111,7 @@ function calculatePercentage(
   return Math.round((completed / attempted) * 100);
 }
 
-function extractPlayerName(text: string): string | null {
+function extractPlayerEaId(text: string): string | null {
   const lines = text
     .split("\n")
     .map((line) => line.trim())
@@ -194,7 +194,7 @@ export function parseScreenshotText(
   ]);
 
   return {
-    playerName: extractPlayerName(text),
+    playerEaId: extractPlayerEaId(text),
 
     rating: matchNumber(text, [
       /gesamtwert[^0-9]{0,20}(\d{1,2}[.,]\d)/i,

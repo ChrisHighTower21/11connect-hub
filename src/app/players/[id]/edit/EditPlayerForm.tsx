@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 
 type PlayerData = {
   id: string;
-  name: string;
-  eaId: string | null;
+  eaId: string;
   shirtNumber: number | null;
   mainPosition: string | null;
   secondaryPosition: string | null;
@@ -24,8 +23,7 @@ export function EditPlayerForm({
 }: EditPlayerFormProps) {
   const router = useRouter();
 
-  const [name, setName] = useState(player.name);
-  const [eaId, setEaId] = useState(player.eaId ?? "");
+  const [eaId, setEaId] = useState(player.eaId);
   const [shirtNumber, setShirtNumber] = useState(
     player.shirtNumber?.toString() ?? ""
   );
@@ -49,8 +47,8 @@ export function EditPlayerForm({
   ) {
     event.preventDefault();
 
-    if (!name.trim()) {
-      setError("Bitte gib einen Spielernamen ein.");
+    if (!eaId.trim()) {
+      setError("Bitte gib eine EA-ID ein.");
       return;
     }
 
@@ -66,8 +64,7 @@ export function EditPlayerForm({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: name.trim(),
-            eaId: eaId.trim() || null,
+            eaId: eaId.trim(),
             shirtNumber: shirtNumber ? Number(shirtNumber) : null,
             mainPosition: mainPosition.trim() || null,
             secondaryPosition:
@@ -106,19 +103,6 @@ export function EditPlayerForm({
       <form className="form" onSubmit={handleSubmit}>
         <div className="form-row">
           <label>
-            Spielername
-            <input
-              type="text"
-              value={name}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
-              disabled={isSaving}
-              required
-            />
-          </label>
-
-          <label>
             EA-ID
             <input
               type="text"
@@ -127,11 +111,10 @@ export function EditPlayerForm({
                 setEaId(event.target.value)
               }
               disabled={isSaving}
+              required
             />
           </label>
-        </div>
 
-        <div className="form-row">
           <label>
             Trikotnummer
             <input
@@ -147,7 +130,9 @@ export function EditPlayerForm({
               disabled={isSaving}
             />
           </label>
+        </div>
 
+        <div className="form-row">
           <label>
             Hauptposition
             <input
@@ -159,10 +144,6 @@ export function EditPlayerForm({
               disabled={isSaving}
             />
           </label>
-
-        </div>
-
-        <div className="form-row">
           <label>
             Nebenposition
             <input
@@ -174,6 +155,9 @@ export function EditPlayerForm({
               disabled={isSaving}
             />
           </label>
+        </div>
+
+        <div className="form-row">
           <label>
             Discord-Name
             <input
@@ -185,10 +169,6 @@ export function EditPlayerForm({
               disabled={isSaving}
             />
           </label>
-
-        </div>
-
-        <div className="form-row">
           <label>
             Eintrittsdatum
             <input

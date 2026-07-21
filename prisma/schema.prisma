@@ -9,8 +9,8 @@ datasource db {
 
 model Player {
   id                String    @id @default(cuid())
-  name              String
-  eaId              String?
+  name              String?   @ignore
+  eaId              String    @unique
   shirtNumber       Int?
   mainPosition      String?
   secondaryPosition String?

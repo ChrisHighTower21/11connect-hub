@@ -96,15 +96,15 @@ export async function PATCH(
       );
     }
 
-    const name =
-      typeof body.name === "string"
-        ? body.name.trim()
+    const eaId =
+      typeof body.eaId === "string"
+        ? body.eaId.trim()
         : "";
 
-    if (!name) {
+    if (!eaId) {
       return NextResponse.json(
         {
-          error: "Der Spielername ist erforderlich.",
+          error: "Die EA-ID ist erforderlich.",
         },
         {
           status: 400,
@@ -147,11 +147,7 @@ export async function PATCH(
         id,
       },
       data: {
-        name,
-        eaId:
-          typeof body.eaId === "string" && body.eaId.trim()
-            ? body.eaId.trim()
-            : null,
+        eaId,
         shirtNumber,
         mainPosition:
           typeof body.mainPosition === "string" &&
@@ -227,7 +223,7 @@ export async function DELETE(
       },
       select: {
         id: true,
-        name: true,
+        eaId: true,
       },
     });
 
@@ -264,7 +260,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: `${player.name} wurde gelöscht.`,
+      message: `${player.eaId} wurde gelöscht.`,
     });
   } catch (error) {
     console.error("DELETE /api/players/[id] failed:", error);

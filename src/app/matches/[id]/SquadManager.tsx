@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 type Player = {
   id: string;
-  name: string;
+  eaId: string;
   mainPosition: string | null;
   isActive: boolean;
 };
@@ -93,7 +93,7 @@ export function SquadManager({
                     onClick={() => togglePlayer(player.id)}
                   >
                     <div>
-                      <strong>{player.name}</strong>
+                      <strong>{player.eaId}</strong>
                       <span>{player.mainPosition ?? "Keine Position"}</span>
                     </div>
 

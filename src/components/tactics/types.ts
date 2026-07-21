@@ -20,12 +20,6 @@ export type TacticPlayer = {
    */
   eaId: string;
 
-  /**
-   * Optionaler echter Name.
-   * Wird nur sekundär angezeigt.
-   */
-  name: string | null;
-
   position: string | null;
   shirtNumber: number | null;
 };

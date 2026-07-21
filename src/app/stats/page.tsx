@@ -4,7 +4,7 @@ import { SeasonFilter } from "./SeasonFilter";
 
 type PlayerRanking = {
   playerId: string;
-  name: string;
+  eaId: string;
   mainPosition: string | null;
   games: number;
   goals: number;
@@ -71,7 +71,7 @@ function RankingTable({
                 <td>{index + 1}</td>
                 <td>
                   <Link href={`/players/${player.playerId}`}>
-                    {player.name}
+                    {player.eaId}
                   </Link>
                 </td>
                 <td>{player.mainPosition ?? "-"}</td>
@@ -133,7 +133,7 @@ export default async function StatsPage({
       },
     },
     orderBy: {
-      name: "asc",
+      eaId: "asc",
     },
   });
 
@@ -146,7 +146,7 @@ export default async function StatsPage({
 
     return {
       playerId: player.id,
-      name: player.name,
+      eaId: player.eaId,
       mainPosition: player.mainPosition,
       games,
       goals,
@@ -229,7 +229,7 @@ export default async function StatsPage({
                 <tr key={player.playerId}>
                   <td>
                     <Link href={`/players/${player.playerId}`}>
-                      {player.name}
+                      {player.eaId}
                     </Link>
                   </td>
                   <td>{player.mainPosition ?? "-"}</td>

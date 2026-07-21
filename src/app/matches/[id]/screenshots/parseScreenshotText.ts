@@ -1,5 +1,5 @@
 export type ParsedScreenshotStats = {
-  playerName: string | null;
+  playerEaId: string | null;
   rating: number | null;
 
   goals: number | null;
@@ -189,7 +189,7 @@ function matchBallverlust(text: string): number | null {
   return normalizeOcrNumberToken(firstToken);
 }
 
-function extractPlayerName(text: string): string | null {
+function extractPlayerEaId(text: string): string | null {
   const lines = text
     .split("\n")
     .map((line) => line.trim())
@@ -214,7 +214,7 @@ export function parseScreenshotText(
   const text = normalizeText(rawText);
 
   return {
-    playerName: extractPlayerName(text),
+    playerEaId: extractPlayerEaId(text),
 
     rating: matchSingleNumber(text, [
       /gesamtwert[^0-9]{0,20}(\d{1,2}[.,]\d)/i,

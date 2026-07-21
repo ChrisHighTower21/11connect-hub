@@ -30,7 +30,7 @@ type StatsFormProps = {
   matchId: string;
   player: {
     id: string;
-    name: string;
+    eaId: string;
     mainPosition: string | null;
   };
   existingStat?: ExistingStat | null;
@@ -146,7 +146,7 @@ export function StatsForm({ matchId, player, existingStat }: StatsFormProps) {
       }}
     >
       <div>
-        <strong>{player.name}</strong>
+        <strong>{player.eaId}</strong>
         <div className="muted">{position || player.mainPosition || "-"}</div>
       </div>
 

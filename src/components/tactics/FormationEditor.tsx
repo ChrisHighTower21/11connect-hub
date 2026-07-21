@@ -183,12 +183,7 @@ export function FormationEditor({
           .toLocaleLowerCase("de")
           .includes(normalizedQuery);
 
-        const nameMatches =
-          player.name
-            ?.toLocaleLowerCase("de")
-            .includes(normalizedQuery) ?? false;
-
-        return eaIdMatches || nameMatches;
+        return eaIdMatches;
       })
       .sort((first, second) =>
         first.eaId.localeCompare(

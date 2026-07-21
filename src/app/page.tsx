@@ -127,7 +127,7 @@ export default async function DashboardPage({
 
     return {
       id: player.id,
-      name: player.name,
+      eaId: player.eaId,
       goals,
       assists,
       games,
@@ -371,7 +371,7 @@ export default async function DashboardPage({
 
           <p className="page-description">
             {topRating
-              ? `${topRating.name} • ${topRating.averageRating.toFixed(2)}`
+              ? `${topRating.eaId} • ${topRating.averageRating.toFixed(2)}`
               : "Noch keine Bewertungen erfasst."}
           </p>
         </div>
@@ -381,7 +381,7 @@ export default async function DashboardPage({
 
           <p className="page-description">
             {topScorer && topScorer.goals > 0
-              ? `${topScorer.name} • ${topScorer.goals} Tore`
+              ? `${topScorer.eaId} • ${topScorer.goals} Tore`
               : "Noch keine Tore erfasst."}
           </p>
         </div>
@@ -391,7 +391,7 @@ export default async function DashboardPage({
 
           <p className="page-description">
             {topAssist && topAssist.assists > 0
-              ? `${topAssist.name} • ${topAssist.assists} Vorlagen`
+              ? `${topAssist.eaId} • ${topAssist.assists} Vorlagen`
               : "Noch keine Vorlagen erfasst."}
           </p>
         </div>
