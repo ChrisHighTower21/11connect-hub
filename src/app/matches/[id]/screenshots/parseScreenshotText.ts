@@ -30,7 +30,6 @@ export type ParsedScreenshotStats = {
 function normalizeText(text: string): string {
   return text
     .replace(/\r/g, "")
-    .replace(/[|]/g, "I")
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
     .replace(/[ \t]+/g, " ")
@@ -95,10 +94,6 @@ function matchPlayerColumn(
         labelMatch.index + labelMatch[0].length
       );
 
-if (/ballverlust/i.test(line)) {
-  console.log("Ballverlust-Zeile:", line);
-}
-
       const tokens =
         valueArea.match(
           /[0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?/g
@@ -110,13 +105,13 @@ if (/ballverlust/i.test(line)) {
 
       const firstToken = tokens[0];
 
-if (!firstToken) {
-  continue;
-}
+      if (!firstToken) {
+        continue;
+      }
 
-const normalizedToken = firstToken
-  .replace(/[OoQ]/g, "0")
-  .replace(/[Il|]/g, "1");
+      const normalizedToken = firstToken
+        .replace(/[OoQ]/g, "0")
+        .replace(/[Il|]/g, "1");
 
       /*
        * OCR verbindet gelegentlich beide Spalten:
@@ -162,6 +157,18 @@ function matchSingleNumber(
   return null;
 }
 
+function matchBallverlust(text: string): number | null {
+  const match = text.match(
+    /ballverlust(?:e)?\s+([0-9OoQIl|]+(?:[.,][0-9OoQIl|]+)?)/i
+  );
+
+  if (!match?.[1]) {
+    return null;
+  }
+
+  return normalizeOcrNumberToken(match[1]);
+}
+
 function extractPlayerName(text: string): string | null {
   const lines = text
     .split("\n")
@@ -186,7 +193,7 @@ export function parseScreenshotText(
 ): ParsedScreenshotStats {
   const text = normalizeText(rawText);
 
-    return {
+  return {
     playerName: extractPlayerName(text),
 
     rating: matchSingleNumber(text, [
@@ -249,10 +256,7 @@ export function parseScreenshotText(
       "ballbesitz\\s+erobert",
     ]),
 
-    possessionLost: matchPlayerColumn(text, [
-  "ballverlust",
-  "ballverluste",
-]),
+    possessionLost: matchBallverlust(text),
 
     minutesPlayed: matchPlayerColumn(text, [
       "gespielte\\s+minuten(?:\\/teamschnitt)?",
