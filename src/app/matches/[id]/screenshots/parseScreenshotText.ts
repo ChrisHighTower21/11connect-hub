@@ -246,8 +246,9 @@ export function parseScreenshotText(
     ]),
 
     possessionLost: matchPlayerColumn(text, [
-      "\\bballverlust(?:e)?\\b",
-    ]),
+  "ballverlust",
+  "ballverluste",
+]),
 
     minutesPlayed: matchPlayerColumn(text, [
       "gespielte\\s+minuten(?:\\/teamschnitt)?",
