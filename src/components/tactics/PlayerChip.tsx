@@ -127,7 +127,7 @@ function PlayerAvatar({
         boxShadow: "0 5px 14px rgba(37,99,235,0.35)",
       }}
     >
-      {player.shirtNumber ?? initials || "11"}
+      {player.shirtNumber ?? (initials || "11")}
     </div>
   );
 }
