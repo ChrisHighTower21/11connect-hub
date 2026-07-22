@@ -60,6 +60,8 @@ type StoredBoard = {
   objects: BoardObject[];
   theme: PitchTheme;
   jerseyDesign?: JerseyDesign;
+  jerseyPrimaryColor?: string;
+  jerseySecondaryColor?: string;
 };
 
 type SavedPlan = StoredBoard & {
@@ -104,6 +106,17 @@ const colors = [
   "#ffffff",
   "#111827",
 ];
+
+const jerseyColors = [
+  { id: "#38bdf8", label: "Hellblau" },
+  { id: "#ef4444", label: "Rot" },
+  { id: "#facc15", label: "Gelb" },
+  { id: "#22c55e", label: "Grün" },
+  { id: "#a855f7", label: "Violett" },
+  { id: "#f97316", label: "Orange" },
+  { id: "#ffffff", label: "Weiß" },
+  { id: "#111827", label: "Schwarz" },
+] as const;
 
 const pitchThemes: Array<{ id: PitchTheme; label: string }> = [
   { id: "classic", label: "Klassisch" },
@@ -193,6 +206,8 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
   const [strokeWidth, setStrokeWidth] = useState(4);
   const [pitchTheme, setPitchTheme] = useState<PitchTheme>("classic");
   const [jerseyDesign, setJerseyDesign] = useState<JerseyDesign>("solid");
+  const [jerseyPrimaryColor, setJerseyPrimaryColor] = useState(colors[0]);
+  const [jerseySecondaryColor, setJerseySecondaryColor] = useState("#ffffff");
   const [boardFormation, setBoardFormation] = useState<BoardFormation>("4-2-3-1");
   const [selectedPlayerId, setSelectedPlayerId] = useState(players[0]?.id ?? "");
   const [markerName, setMarkerName] = useState("");
@@ -232,6 +247,21 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
         ) {
           setJerseyDesign(storedJerseyDesign);
         }
+        const storedPrimaryColor = parsed.jerseyPrimaryColor;
+        const fallbackPrimaryColor = parsed.objects.find(
+          (object): object is MarkerObject =>
+            object.type === "marker" && object.kind === "player"
+        )?.color;
+        const primaryColor = colors.includes(storedPrimaryColor ?? "")
+          ? storedPrimaryColor!
+          : colors.includes(fallbackPrimaryColor ?? "")
+            ? fallbackPrimaryColor!
+            : colors[0];
+        setJerseyPrimaryColor(primaryColor);
+        setActiveColor(primaryColor);
+        if (colors.includes(parsed.jerseySecondaryColor ?? "")) {
+          setJerseySecondaryColor(parsed.jerseySecondaryColor!);
+        }
       }
 
       if (storedPlans) {
@@ -251,9 +281,15 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     if (!isHydrated) return;
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ objects, theme: pitchTheme, jerseyDesign } satisfies StoredBoard)
+      JSON.stringify({
+        objects,
+        theme: pitchTheme,
+        jerseyDesign,
+        jerseyPrimaryColor,
+        jerseySecondaryColor,
+      } satisfies StoredBoard)
     );
-  }, [isHydrated, jerseyDesign, objects, pitchTheme]);
+  }, [isHydrated, jerseyDesign, jerseyPrimaryColor, jerseySecondaryColor, objects, pitchTheme]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -271,8 +307,16 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     if (!context) return;
 
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    drawBoard(context, objects, draft, selectedId, pitchTheme, jerseyDesign);
-  }, [objects, draft, selectedId, pitchTheme, jerseyDesign]);
+    drawBoard(
+      context,
+      objects,
+      draft,
+      selectedId,
+      pitchTheme,
+      jerseyDesign,
+      jerseySecondaryColor
+    );
+  }, [objects, draft, selectedId, pitchTheme, jerseyDesign, jerseySecondaryColor]);
 
   useEffect(() => {
     function handleKeyboard(event: KeyboardEvent) {
@@ -463,7 +507,12 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       kind,
       x: point.x,
       y: point.y,
-      color: kind === "opponent" ? "#ef4444" : kind === "goalkeeper" ? "#facc15" : activeColor,
+      color:
+        kind === "opponent"
+          ? "#ef4444"
+          : kind === "goalkeeper"
+            ? "#facc15"
+            : jerseyPrimaryColor,
       number: String(rosterPlayer?.shirtNumber ?? (markerNumber || "1")),
       name: rosterPlayer?.eaId ?? (markerName.trim() || defaultName),
     };
@@ -485,6 +534,26 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     if (selectedMarker && selectedMarker.kind !== "ball") {
       updateSelectedMarker({ color });
     }
+  }
+
+  function changeJerseyPrimaryColor(color: string) {
+    setJerseyPrimaryColor(color);
+    setActiveColor(color);
+    setObjects((current) =>
+      current.map((object) =>
+        object.type === "marker" && object.kind === "player"
+          ? { ...object, color }
+          : object
+      )
+    );
+    const label = jerseyColors.find((entry) => entry.id === color)?.label ?? color;
+    setStatus(`Kader-Hauptfarbe „${label}“ ausgewählt`);
+  }
+
+  function changeJerseySecondaryColor(color: string) {
+    setJerseySecondaryColor(color);
+    const label = jerseyColors.find((entry) => entry.id === color)?.label ?? color;
+    setStatus(`Kader-Musterfarbe „${label}“ ausgewählt`);
   }
 
   function deleteSelected() {
@@ -520,7 +589,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
         kind: slot.position === "TW" ? "goalkeeper" : "player",
         x: slot.x,
         y: slot.y,
-        color: slot.position === "TW" ? "#facc15" : activeColor,
+        color: slot.position === "TW" ? "#facc15" : jerseyPrimaryColor,
         number: String(player.shirtNumber ?? ""),
         name: player.eaId,
       });
@@ -555,7 +624,16 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       setPlans((current) =>
         current.map((plan) =>
           plan.id === nextId
-            ? { ...plan, name: cleanName, objects, theme: pitchTheme, jerseyDesign, updatedAt: now }
+            ? {
+                ...plan,
+                name: cleanName,
+                objects,
+                theme: pitchTheme,
+                jerseyDesign,
+                jerseyPrimaryColor,
+                jerseySecondaryColor,
+                updatedAt: now,
+              }
             : plan
         )
       );
@@ -563,7 +641,16 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       nextId = createId();
       setPlans((current) => [
         ...current,
-        { id: nextId, name: cleanName, objects, theme: pitchTheme, jerseyDesign, updatedAt: now },
+        {
+          id: nextId,
+          name: cleanName,
+          objects,
+          theme: pitchTheme,
+          jerseyDesign,
+          jerseyPrimaryColor,
+          jerseySecondaryColor,
+          updatedAt: now,
+        },
       ]);
       setActivePlanId(nextId);
     }
@@ -580,6 +667,15 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     setObjects(plan.objects);
     setPitchTheme(plan.theme);
     setJerseyDesign(plan.jerseyDesign ?? "solid");
+    const primaryColor = plan.jerseyPrimaryColor
+      ?? plan.objects.find(
+        (object): object is MarkerObject =>
+          object.type === "marker" && object.kind === "player"
+      )?.color
+      ?? colors[0];
+    setJerseyPrimaryColor(primaryColor);
+    setJerseySecondaryColor(plan.jerseySecondaryColor ?? "#ffffff");
+    setActiveColor(primaryColor);
     setPlanName(plan.name);
     setSelectedId(null);
     setStatus(`„${plan.name}“ geladen`);
@@ -602,7 +698,15 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     const context = exportCanvas.getContext("2d");
     if (!context) return;
     context.scale(2, 2);
-    drawBoard(context, objects, null, null, pitchTheme, jerseyDesign);
+    drawBoard(
+      context,
+      objects,
+      null,
+      null,
+      pitchTheme,
+      jerseyDesign,
+      jerseySecondaryColor
+    );
 
     const link = document.createElement("a");
     const filename = (planName.trim() || "taktiktafel")
@@ -819,6 +923,30 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
           </label>
 
           <label>
+            <span>Kader-Hauptfarbe</span>
+            <select
+              value={jerseyPrimaryColor}
+              onChange={(event) => changeJerseyPrimaryColor(event.target.value)}
+            >
+              {jerseyColors.map((color) => (
+                <option key={color.id} value={color.id}>{color.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            <span>Kader-Musterfarbe</span>
+            <select
+              value={jerseySecondaryColor}
+              onChange={(event) => changeJerseySecondaryColor(event.target.value)}
+            >
+              {jerseyColors.map((color) => (
+                <option key={color.id} value={color.id}>{color.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label>
             <span>Spielfeld-Stil</span>
             <select value={pitchTheme} onChange={(event) => setPitchTheme(event.target.value as PitchTheme)}>
               {pitchThemes.map((theme) => (
@@ -893,7 +1021,8 @@ function drawBoard(
   draft: StrokeObject | null,
   selectedId: string | null,
   theme: PitchTheme,
-  jerseyDesign: JerseyDesign
+  jerseyDesign: JerseyDesign,
+  jerseySecondaryColor: string
 ) {
   context.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
   drawPitch(context, theme);
@@ -904,7 +1033,13 @@ function drawBoard(
   if (draft) drawStroke(context, draft, false);
   for (const object of objects) {
     if (object.type === "marker") {
-      drawMarker(context, object, object.id === selectedId, jerseyDesign);
+      drawMarker(
+        context,
+        object,
+        object.id === selectedId,
+        jerseyDesign,
+        jerseySecondaryColor
+      );
     }
   }
 }
@@ -1057,7 +1192,8 @@ function drawMarker(
   context: CanvasRenderingContext2D,
   marker: MarkerObject,
   selected: boolean,
-  jerseyDesign: JerseyDesign
+  jerseyDesign: JerseyDesign,
+  jerseySecondaryColor: string
 ) {
   context.save();
   if (selected && marker.kind === "ball") {
@@ -1098,6 +1234,7 @@ function drawMarker(
     context,
     marker,
     marker.kind === "player" ? jerseyDesign : "solid",
+    marker.kind === "player" ? jerseySecondaryColor : jerseyPatternColor(marker.color),
     selected
   );
 
@@ -1113,6 +1250,8 @@ function drawMarker(
     context.lineWidth = 1;
     context.stroke();
     context.fillStyle = "#ffffff";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
     context.fillText(label, marker.x, labelY + 1);
   }
   context.restore();
@@ -1122,10 +1261,10 @@ function drawJersey(
   context: CanvasRenderingContext2D,
   marker: MarkerObject,
   design: JerseyDesign,
+  patternColor: string,
   selected: boolean
 ) {
   const { x, y, color } = marker;
-  const patternColor = jerseyPatternColor(color);
 
   context.save();
   context.shadowColor = selected ? "rgba(56,189,248,.75)" : "rgba(0,0,0,.42)";
