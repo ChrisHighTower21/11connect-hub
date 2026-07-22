@@ -32,10 +32,6 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [isSidebarOpen]);
 
-  if (pathname === "/") {
-    return <>{children}</>;
-  }
-
   return (
     <div className="app-shell">
       <button

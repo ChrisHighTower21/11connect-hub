@@ -1,331 +1,548 @@
-import type { Metadata } from "next";
+import { DashboardSeasonFilter } from "./DashboardSeasonFilter";
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 
-export const metadata: Metadata = {
-  title: "11connect – Clubmanagement für EA FC Clubs",
-  description:
-    "Kader, Spiele, Statistiken und Taktik in einer Plattform für ambitionierte EA FC Clubs.",
-};
+function getResultLabel(result: string) {
+  if (result === "WIN") return "Sieg";
+  if (result === "DRAW") return "Remis";
+  if (result === "LOSS") return "Niederlage";
+  return result;
+}
 
-const features = [
-  {
-    icon: "◫",
-    eyebrow: "Kader",
-    title: "Alle Spieler an einem Ort",
-    text: "EA-ID, Position, Trikotnummer und Leistungsdaten sauber verwalten.",
-  },
-  {
-    icon: "⚽",
-    eyebrow: "Spieltage",
-    title: "Matches lückenlos erfassen",
-    text: "Ergebnisse, Aufstellungen und individuelle Leistungen direkt dokumentieren.",
-  },
-  {
-    icon: "↗",
-    eyebrow: "Analyse",
-    title: "Entwicklung sichtbar machen",
-    text: "Form, Scorer, Bewertungen und Teamleistung schnell vergleichen.",
-  },
-  {
-    icon: "✎",
-    eyebrow: "Taktiktafel",
-    title: "Spielzüge klar erklären",
-    text: "Spieler platzieren, Laufwege zeichnen und Varianten als Bild teilen.",
-  },
-  {
-    icon: "▣",
-    eyebrow: "Screenshots",
-    title: "Weniger manuelle Arbeit",
-    text: "Spielberichte und Screenshots zentral beim jeweiligen Match ablegen.",
-  },
-  {
-    icon: "◎",
-    eyebrow: "Saisons",
-    title: "Wettbewerbe im Blick behalten",
-    text: "Mehrere Saisons und Wettbewerbe strukturiert voneinander trennen.",
-  },
-];
+function getResultClass(result: string) {
+  if (result === "WIN") return "badge badge-win";
+  if (result === "DRAW") return "badge badge-draw";
+  if (result === "LOSS") return "badge badge-loss";
+  return "badge badge-muted";
+}
 
-const boardPlayers = [
-  { number: "1", label: "TW", left: "10%", top: "50%" },
-  { number: "3", label: "IV", left: "27%", top: "30%" },
-  { number: "5", label: "IV", left: "27%", top: "70%" },
-  { number: "6", label: "ZDM", left: "47%", top: "42%" },
-  { number: "8", label: "ZM", left: "57%", top: "68%" },
-  { number: "10", label: "ZOM", left: "71%", top: "31%" },
-  { number: "9", label: "ST", left: "85%", top: "52%" },
-];
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: {
+    seasonId?: string;
+  };
+}) {
+  const seasons = await prisma.season.findMany({
+    include: {
+      competition: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-export default function LandingPage() {
+  const totalPlayers = await prisma.player.count();
+
+  const activeSeason = searchParams.seasonId
+    ? await prisma.season.findUnique({
+        where: {
+          id: searchParams.seasonId,
+        },
+        include: {
+          competition: true,
+        },
+      })
+    : await prisma.season.findFirst({
+        where: {
+          isActive: true,
+        },
+        include: {
+          competition: true,
+        },
+      });
+
+  const matches = await prisma.match.findMany({
+    where: activeSeason
+      ? {
+          seasonId: activeSeason.id,
+        }
+      : undefined,
+  });
+
+  const latestMatches = await prisma.match.findMany({
+    where: activeSeason
+      ? {
+          seasonId: activeSeason.id,
+        }
+      : undefined,
+    include: {
+      season: {
+        include: {
+          competition: true,
+        },
+      },
+    },
+    orderBy: {
+      matchDate: "desc",
+    },
+    take: 5,
+  });
+
+  const totalMatches = matches.length;
+  const wins = matches.filter((match) => match.result === "WIN").length;
+  const draws = matches.filter((match) => match.result === "DRAW").length;
+  const losses = matches.filter((match) => match.result === "LOSS").length;
+
+  const goalsFor = matches.reduce((sum, match) => sum + match.teamGoals, 0);
+  const goalsAgainst = matches.reduce(
+    (sum, match) => sum + match.opponentGoals,
+    0
+  );
+
+  const goalDifference = goalsFor - goalsAgainst;
+  const points = wins * 3 + draws;
+
+  const winRate =
+    totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  const recentForm = latestMatches
+    .slice(0, 5)
+    .map((match) => {
+      if (match.result === "WIN") return "W";
+      if (match.result === "DRAW") return "D";
+      return "L";
+    })
+    .reverse();
+
+  const playersWithStats = await prisma.player.findMany({
+    include: {
+      stats: {
+        where: activeSeason
+          ? {
+              match: {
+                seasonId: activeSeason.id,
+              },
+            }
+          : undefined,
+      },
+    },
+  });
+
+  const playerSummaries = playersWithStats.map((player) => {
+    const goals = player.stats.reduce((sum, stat) => sum + stat.goals, 0);
+    const assists = player.stats.reduce((sum, stat) => sum + stat.assists, 0);
+    const games = player.stats.length;
+    const ratingSum = player.stats.reduce((sum, stat) => sum + stat.rating, 0);
+
+    return {
+      id: player.id,
+      eaId: player.eaId,
+      goals,
+      assists,
+      games,
+      averageRating: games > 0 ? ratingSum / games : 0,
+    };
+  });
+
+  const topScorer = [...playerSummaries].sort((a, b) => b.goals - a.goals)[0];
+
+  const topAssist = [...playerSummaries].sort(
+    (a, b) => b.assists - a.assists
+  )[0];
+
+  const topRating = [...playerSummaries]
+    .filter((player) => player.games > 0)
+    .sort((a, b) => b.averageRating - a.averageRating)[0];
+
+  const allStats = playersWithStats.flatMap((player) => player.stats);
+
+  const averageTeamRating =
+    allStats.length > 0
+      ? (
+          allStats.reduce((sum, stat) => sum + stat.rating, 0) /
+          allStats.length
+        ).toFixed(2)
+      : "-";
+
+  const previewPositions = [
+    { x: 10, y: 50 },
+    { x: 28, y: 23 },
+    { x: 27, y: 72 },
+    { x: 47, y: 37 },
+    { x: 55, y: 70 },
+    { x: 72, y: 25 },
+    { x: 84, y: 51 },
+  ];
+
+  const positionOrder = [
+    "TW",
+    "LV",
+    "LIV",
+    "IV",
+    "RIV",
+    "RV",
+    "LDM",
+    "ZDM",
+    "RDM",
+    "LM",
+    "ZOM",
+    "RM",
+    "LS",
+    "ST",
+    "RS",
+  ];
+
+  const tacticsPreviewPlayers = [...playersWithStats]
+    .sort(
+      (first, second) =>
+        positionOrder.indexOf(first.mainPosition ?? "") -
+        positionOrder.indexOf(second.mainPosition ?? "")
+    )
+    .slice(0, previewPositions.length);
+
   return (
-    <div className="public-landing">
-      <header className="landing-nav-wrap">
-        <nav className="landing-nav" aria-label="Hauptnavigation">
-          <Link href="/" className="landing-brand" aria-label="11connect Startseite">
-            <span>11</span>connect
-          </Link>
+    <>
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-description">
+            Übersicht über den aktuellen Vereinsstand.
+          </p>
+        </div>
 
-          <div className="landing-nav-links">
-            <a href="#features">Funktionen</a>
-            <a href="#taktikboard">Taktikboard</a>
-            <a href="#ablauf">So funktioniert&apos;s</a>
-            <a href="#kontakt">Kontakt</a>
-          </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {seasons.length > 0 && activeSeason ? (
+            <DashboardSeasonFilter
+              seasons={seasons}
+              currentSeasonId={activeSeason.id}
+            />
+          ) : null}
 
-          <Link href="/dashboard" className="landing-login-link">
-            Hub öffnen <span aria-hidden="true">→</span>
+          <Link className="button button-primary" href="/players/new">
+            + Spieler anlegen
           </Link>
-        </nav>
+        </div>
       </header>
 
-      <main>
-        <section className="landing-hero">
-          <div className="landing-container landing-hero-grid">
-            <div className="landing-hero-copy">
-              <div className="landing-pill">
-                <span /> Für ambitionierte EA FC Clubs
-              </div>
+      <section className="dashboard-tactics-spotlight">
+        <div className="dashboard-tactics-copy">
+          <div className="dashboard-tactics-eyebrow">
+            <span>Neu</span>
+            Trainerwerkzeug
+          </div>
 
-              <h1>
-                Dein Club.
-                <span>Eine klare Linie.</span>
-              </h1>
+          <h2>Spielzüge sehen, bevor sie passieren.</h2>
 
-              <p>
-                11connect verbindet Kaderverwaltung, Spielanalyse und taktische
-                Planung in einem Hub – damit aus Einzelspielern ein besseres Team wird.
-              </p>
+          <p>
+            Plane Formationen, zeichne Laufwege und erkläre deinem Team jede
+            Variante direkt auf dem Spielfeld.
+          </p>
 
-              <div className="landing-hero-actions">
-                <a href="#features" className="landing-button landing-button--primary">
-                  Funktionen entdecken <span aria-hidden="true">↓</span>
-                </a>
-                <a href="#kontakt" className="landing-button landing-button--ghost">
-                  Kontakt aufnehmen
-                </a>
-              </div>
+          <div className="dashboard-tactics-actions">
+            <Link className="button dashboard-tactics-primary" href="/taktiktafel">
+              Taktiktafel öffnen <span aria-hidden="true">→</span>
+            </Link>
+            <Link className="dashboard-tactics-secondary" href="/taktiken">
+              Aufstellung bearbeiten
+            </Link>
+          </div>
 
-              <div className="landing-hero-proof">
-                <span><i>✓</i> Einfache Bedienung</span>
-                <span><i>✓</i> Desktop & Mobil</span>
-                <span><i>✓</i> Für den ganzen Club</span>
-              </div>
+          <div className="dashboard-tactics-features">
+            <div>
+              <span aria-hidden="true">●</span>
+              <strong>Kader einsetzen</strong>
+              <small>Spieler und Nummern direkt übernehmen</small>
+            </div>
+            <div>
+              <span aria-hidden="true">➜</span>
+              <strong>Spielzüge zeichnen</strong>
+              <small>Pfeile, Laufwege und freie Linien</small>
+            </div>
+            <div>
+              <span aria-hidden="true">↶</span>
+              <strong>Varianten sichern</strong>
+              <small>Speichern, laden und rückgängig machen</small>
+            </div>
+            <div>
+              <span aria-hidden="true">↓</span>
+              <strong>Einfach teilen</strong>
+              <small>Besprechungsfertig als PNG exportieren</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-tactics-visual" aria-label="Vorschau der Taktiktafel">
+          <div className="dashboard-tactics-windowbar">
+            <div>
+              <span />
+              <span />
+              <span />
+            </div>
+            <strong>Angriff über rechts</strong>
+            <span>4-2-3-1</span>
+          </div>
+
+          <div className="dashboard-tactics-preview">
+            <div className="dashboard-preview-tools" aria-hidden="true">
+              <span className="active">↖</span>
+              <span>●</span>
+              <span>➜</span>
+              <span>⌁</span>
+              <span>✎</span>
+            </div>
+
+            <div className="dashboard-preview-pitch">
+              <span className="dashboard-preview-outline" />
+              <span className="dashboard-preview-halfway" />
+              <span className="dashboard-preview-center" />
+              <span className="dashboard-preview-center-dot" />
+              <span className="dashboard-preview-box dashboard-preview-box--left" />
+              <span className="dashboard-preview-box dashboard-preview-box--right" />
+              <span className="dashboard-preview-goalbox dashboard-preview-goalbox--left" />
+              <span className="dashboard-preview-goalbox dashboard-preview-goalbox--right" />
+              <span className="dashboard-preview-goal dashboard-preview-goal--left" />
+              <span className="dashboard-preview-goal dashboard-preview-goal--right" />
+
+              <span className="dashboard-preview-arrow dashboard-preview-arrow--one" />
+              <span className="dashboard-preview-arrow dashboard-preview-arrow--two" />
+              <span className="dashboard-preview-run dashboard-preview-run--one" />
+
+              {tacticsPreviewPlayers.map((player, index) => (
+                <span
+                  className={`dashboard-preview-player ${index === tacticsPreviewPlayers.length - 1 ? "dashboard-preview-player--focus" : ""}`}
+                  key={player.id}
+                  style={{
+                    left: `${previewPositions[index].x}%`,
+                    top: `${previewPositions[index].y}%`,
+                  }}
+                >
+                  <span>{player.shirtNumber ?? index + 1}</span>
+                  <small>{player.eaId}</small>
+                </span>
+              ))}
+
+              <span className="dashboard-preview-opponent" style={{ left: "49%", top: "19%" }}>4</span>
+              <span className="dashboard-preview-opponent" style={{ left: "64%", top: "49%" }}>6</span>
+              <span className="dashboard-preview-opponent" style={{ left: "78%", top: "72%" }}>3</span>
+              <span className="dashboard-preview-ball">⚽</span>
+            </div>
+
+            <div className="dashboard-preview-footer">
+              <span><i /> Automatisch gespeichert</span>
+              <span>3 Laufwege · 10 Spieler</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div
+        className="card"
+        style={{
+          marginBottom: 24,
+          padding: 28,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 24,
+          }}
+        >
+          <div>
+            <div className="kpi-label">Aktuelle Saison</div>
+
+            <h2 style={{ margin: "8px 0", fontSize: 34 }}>
+              {activeSeason?.competition.name ?? "Keine Saison"}
+            </h2>
+
+            <div className="page-description">
+              {activeSeason
+                ? `${activeSeason.eafcCycle} • ${activeSeason.name}`
+                : "Keine Saison ausgewählt"}
             </div>
 
             <div
-              className="landing-product-preview"
-              role="img"
-              aria-label="Produktvorschau von 11connect mit Dashboard und Taktikfeld"
+              style={{
+                marginTop: 18,
+                height: 10,
+                width: 360,
+                maxWidth: "100%",
+                background: "#162235",
+                borderRadius: 999,
+                overflow: "hidden",
+              }}
             >
-              <div className="landing-product-topbar">
-                <div><span /><span /><span /></div>
-                <strong>11connect Hub</strong>
-                <span>Live</span>
-              </div>
-
-              <div className="landing-product-body">
-                <aside aria-hidden="true">
-                  <strong>11</strong>
-                  <span className="active">⌂</span>
-                  <span>◫</span>
-                  <span>⚽</span>
-                  <span>↗</span>
-                  <span>✎</span>
-                </aside>
-
-                <div className="landing-product-main">
-                  <div className="landing-product-heading">
-                    <div><small>TEAMZENTRALE</small><strong>Guten Abend, Coach.</strong></div>
-                    <span>Aktive Saison</span>
-                  </div>
-
-                  <div className="landing-product-kpis">
-                    <div><small>Spiele</small><strong>24</strong><em>+3 diesen Monat</em></div>
-                    <div><small>Siegquote</small><strong>67%</strong><em>Form steigt</em></div>
-                    <div><small>Tore</small><strong>58</strong><em>2,4 pro Spiel</em></div>
-                  </div>
-
-                  <div className="landing-product-lower">
-                    <div className="landing-mini-board">
-                      <span className="dashboard-preview-outline" />
-                      <span className="dashboard-preview-halfway" />
-                      <span className="dashboard-preview-center" />
-                      <span className="landing-mini-player" style={{ left: "18%", top: "50%" }}>1</span>
-                      <span className="landing-mini-player" style={{ left: "39%", top: "28%" }}>6</span>
-                      <span className="landing-mini-player" style={{ left: "43%", top: "70%" }}>8</span>
-                      <span className="landing-mini-player" style={{ left: "72%", top: "48%" }}>10</span>
-                      <span className="landing-mini-arrow" />
-                    </div>
-
-                    <div className="landing-form-card">
-                      <small>LETZTE 5 SPIELE</small>
-                      <div><span className="win">S</span><span className="win">S</span><span className="draw">U</span><span className="win">S</span><span className="loss">N</span></div>
-                      <strong>10 Punkte</strong>
-                      <p>Stabile Formkurve</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div
+                style={{
+                  width: `${winRate}%`,
+                  background: "#38bdf8",
+                  height: "100%",
+                }}
+              />
             </div>
           </div>
-        </section>
 
-        <section className="landing-strip" aria-label="Produktbereiche">
-          <div className="landing-container">
-            <span>Kaderverwaltung</span><i />
-            <span>Matchberichte</span><i />
-            <span>Leistungsdaten</span><i />
-            <span>Taktikplanung</span><i />
-            <span>Saisonübersicht</span>
-          </div>
-        </section>
+          <div style={{ textAlign: "right" }}>
+            <div className="kpi-label">Siegquote</div>
 
-        <section className="landing-section" id="features">
-          <div className="landing-container">
-            <div className="landing-section-heading">
-              <div>
-                <span className="landing-kicker">Ein System statt fünf Listen</span>
-                <h2>Alles, was dein Club wirklich braucht.</h2>
-              </div>
-              <p>
-                Von der Spielerpflege bis zur Matchanalyse: Alle wichtigen Abläufe
-                greifen ineinander und bleiben für das Team nachvollziehbar.
-              </p>
+            <div
+              style={{
+                fontSize: 48,
+                fontWeight: 900,
+                color: "#38bdf8",
+              }}
+            >
+              {winRate}%
             </div>
 
-            <div className="landing-feature-grid">
-              {features.map((feature) => (
-                <article className="landing-feature-card" key={feature.title}>
-                  <div className="landing-feature-icon" aria-hidden="true">{feature.icon}</div>
-                  <span>{feature.eyebrow}</span>
-                  <h3>{feature.title}</h3>
-                  <p>{feature.text}</p>
-                </article>
+            <div className="page-description">Form</div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+                marginTop: 8,
+                fontWeight: 800,
+              }}
+            >
+              {recentForm.length === 0
+                ? "-"
+                : recentForm.map((result, index) => (
+                    <span key={index}>{result}</span>
+                  ))}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 28,
+            display: "grid",
+            gridTemplateColumns: "repeat(6,1fr)",
+            gap: 24,
+          }}
+        >
+          <div>
+            <div className="kpi-label">Spiele</div>
+            <div className="kpi-value">{totalMatches}</div>
+          </div>
+
+          <div>
+            <div className="kpi-label">Punkte</div>
+            <div className="kpi-value">{points}</div>
+          </div>
+
+          <div>
+            <div className="kpi-label">Siege</div>
+            <div className="kpi-value">{wins}</div>
+          </div>
+
+          <div>
+            <div className="kpi-label">Remis</div>
+            <div className="kpi-value">{draws}</div>
+          </div>
+
+          <div>
+            <div className="kpi-label">Niederlagen</div>
+            <div className="kpi-value">{losses}</div>
+          </div>
+
+          <div>
+            <div className="kpi-label">Tordifferenz</div>
+            <div className="kpi-value">
+              {goalDifference > 0 ? "+" : ""}
+              {goalDifference}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section className="grid grid-4">
+        <div className="card">
+          <div className="kpi-label">Tore</div>
+          <div className="kpi-value">{goalsFor}</div>
+        </div>
+
+        <div className="card">
+          <div className="kpi-label">Gegentore</div>
+          <div className="kpi-value">{goalsAgainst}</div>
+        </div>
+
+        <div className="card">
+          <div className="kpi-label">Ø Teambewertung</div>
+          <div className="kpi-value">{averageTeamRating}</div>
+        </div>
+
+        <div className="card">
+          <div className="kpi-label">Spieler gesamt</div>
+          <div className="kpi-value">{totalPlayers}</div>
+        </div>
+      </section>
+
+      <section style={{ marginTop: 24 }} className="grid grid-4">
+        <div className="card">
+          <div className="section-title">
+            <h2>Letzte Spiele</h2>
+          </div>
+
+          {latestMatches.length === 0 ? (
+            <p className="page-description">Noch keine Spiele erfasst.</p>
+          ) : (
+            <div className="squad-list-compact">
+              {latestMatches.map((match) => (
+                <Link
+  className="squad-row"
+  key={match.id}
+  href={`/matches/${match.id}`}
+  style={{ textDecoration: "none", color: "inherit" }}
+>
+                  <div>
+                    <strong>vs {match.opponent}</strong>
+                    <div className="muted" style={{ marginTop: 4 }}>
+                      {match.matchDate.toLocaleDateString("de-DE")} •{" "}
+                      {match.season.competition.name}
+                    </div>
+                  </div>
+
+                  <div className="match-summary">
+                    <span className="score-pill" style={{ fontSize: 16 }}>
+                      {match.teamGoals}:{match.opponentGoals}
+                    </span>
+
+                    <span className={getResultClass(match.result)}>
+                      {getResultLabel(match.result)}
+                    </span>
+                  </div>
+                </Link>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="landing-board-section" id="taktikboard">
-          <div className="landing-container landing-board-grid">
-            <div className="landing-board-copy">
-              <span className="landing-kicker">Taktikboard</span>
-              <h2>Deine Idee wird für alle sichtbar.</h2>
-              <p>
-                Stelle deinen Kader automatisch auf, verschiebe Spieler frei und
-                zeichne jede Bewegung so ein, wie du sie im Spiel sehen möchtest.
-              </p>
-
-              <ul className="landing-check-list">
-                <li><span>✓</span><div><strong>Kader direkt übernehmen</strong><small>EA-ID und Trikotnummer bleiben sichtbar.</small></div></li>
-                <li><span>✓</span><div><strong>Pfeile und Laufwege zeichnen</strong><small>Farben und Linienstärken frei wählen.</small></div></li>
-                <li><span>✓</span><div><strong>Varianten speichern und teilen</strong><small>Taktiken laden oder als PNG exportieren.</small></div></li>
-              </ul>
-
-              <Link href="/taktiktafel" className="landing-inline-link">
-                Taktikboard im Hub öffnen <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-
-            <div
-              className="landing-board-window"
-              role="img"
-              aria-label="Taktikboard mit Spielern, Gegnern und eingezeichneten Laufwegen"
-            >
-              <div className="landing-board-toolbar">
-                <div><span className="active">↖</span><span>●</span><span>➜</span><span>⌁</span><span>✎</span></div>
-                <strong>Angriff über rechts</strong>
-                <span>4-2-3-1</span>
-              </div>
-
-              <div className="dashboard-preview-pitch landing-board-pitch">
-                <span className="dashboard-preview-outline" />
-                <span className="dashboard-preview-halfway" />
-                <span className="dashboard-preview-center" />
-                <span className="dashboard-preview-center-dot" />
-                <span className="dashboard-preview-box dashboard-preview-box--left" />
-                <span className="dashboard-preview-box dashboard-preview-box--right" />
-                <span className="dashboard-preview-goalbox dashboard-preview-goalbox--left" />
-                <span className="dashboard-preview-goalbox dashboard-preview-goalbox--right" />
-                <span className="dashboard-preview-goal dashboard-preview-goal--left" />
-                <span className="dashboard-preview-goal dashboard-preview-goal--right" />
-                <span className="dashboard-preview-arrow dashboard-preview-arrow--one" />
-                <span className="dashboard-preview-arrow dashboard-preview-arrow--two" />
-                <span className="dashboard-preview-run" />
-
-                {boardPlayers.map((player) => (
-                  <span
-                    className="dashboard-preview-player landing-board-player"
-                    key={`${player.label}-${player.number}`}
-                    style={{ left: player.left, top: player.top }}
-                  >
-                    <span>{player.number}</span>
-                    <small>{player.label}</small>
-                  </span>
-                ))}
-
-                <span className="dashboard-preview-opponent" style={{ left: "50%", top: "18%" }}>4</span>
-                <span className="dashboard-preview-opponent" style={{ left: "66%", top: "52%" }}>6</span>
-                <span className="dashboard-preview-opponent" style={{ left: "80%", top: "74%" }}>3</span>
-                <span className="dashboard-preview-ball">⚽</span>
-              </div>
-
-              <div className="landing-board-status">
-                <span><i /> Automatisch gespeichert</span>
-                <span>Rückgängig</span>
-                <span>PNG exportieren</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-section landing-workflow" id="ablauf">
-          <div className="landing-container">
-            <div className="landing-centered-heading">
-              <span className="landing-kicker">Vom Spieltag zur Erkenntnis</span>
-              <h2>Drei Schritte. Ein gemeinsames Bild.</h2>
-              <p>Der Hub bringt Informationen genau dorthin, wo dein Team sie braucht.</p>
-            </div>
-
-            <div className="landing-steps">
-              <article><span>01</span><div><strong>Erfassen</strong><p>Kader, Match und Leistungsdaten strukturiert eintragen.</p></div></article>
-              <article><span>02</span><div><strong>Verstehen</strong><p>Entwicklung, Form und Stärken auf einen Blick erkennen.</p></div></article>
-              <article><span>03</span><div><strong>Verbessern</strong><p>Erkenntnisse direkt in Aufstellung und Taktik übersetzen.</p></div></article>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-contact" id="kontakt">
-          <div className="landing-container landing-contact-card">
-            <div>
-              <span className="landing-kicker">Interesse an 11connect?</span>
-              <h2>Lass uns über deinen Club sprechen.</h2>
-              <p>
-                Du möchtest den Hub für dein Team nutzen oder hast Fragen zu den
-                Funktionen? Schreib uns – wir melden uns persönlich bei dir.
-              </p>
-            </div>
-
-            <div className="landing-contact-actions">
-              <a
-                className="landing-button landing-button--primary"
-                href="mailto:kontakt@11connect.com?subject=Interesse%20an%2011connect"
-              >
-                E-Mail schreiben <span aria-hidden="true">↗</span>
-              </a>
-              <span>kontakt@11connect.com</span>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="landing-footer">
-        <div className="landing-container">
-          <Link href="/" className="landing-brand"><span>11</span>connect</Link>
-          <p>Clubmanagement, Spielanalyse und Taktik für EA FC Clubs.</p>
-          <div><a href="#features">Funktionen</a><a href="#kontakt">Kontakt</a><Link href="/dashboard">Hub öffnen</Link></div>
+          )}
         </div>
-      </footer>
-    </div>
+
+        <div className="card">
+          <h2>Top Bewertung</h2>
+
+          <p className="page-description">
+            {topRating
+              ? `${topRating.eaId} • ${topRating.averageRating.toFixed(2)}`
+              : "Noch keine Bewertungen erfasst."}
+          </p>
+        </div>
+
+        <div className="card">
+          <h2>Top Scorer</h2>
+
+          <p className="page-description">
+            {topScorer && topScorer.goals > 0
+              ? `${topScorer.eaId} • ${topScorer.goals} Tore`
+              : "Noch keine Tore erfasst."}
+          </p>
+        </div>
+
+        <div className="card">
+          <h2>Top Vorlagengeber</h2>
+
+          <p className="page-description">
+            {topAssist && topAssist.assists > 0
+              ? `${topAssist.eaId} • ${topAssist.assists} Vorlagen`
+              : "Noch keine Vorlagen erfasst."}
+          </p>
+        </div>
+      </section>
+    </>
   );
 }
