@@ -7,6 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { assignPlayersToFormation } from "@/components/tactical-board/autoFormation";
 import type { TacticPlayer } from "@/components/tactics/types";
 
 const BOARD_WIDTH = 1200;
@@ -488,12 +489,12 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       return;
     }
 
-    const remaining = [...players];
     const formationMarkers: MarkerObject[] = [];
-    for (const slot of boardFormations[boardFormation]) {
-      const playerIndex = bestPlayerIndex(remaining, slot.position);
-      const player = remaining.splice(playerIndex, 1)[0];
-      if (!player) break;
+    const formation = boardFormations[boardFormation];
+    const assignedPlayers = assignPlayersToFormation(players, formation);
+    for (const [slotIndex, slot] of formation.entries()) {
+      const player = assignedPlayers[slotIndex];
+      if (!player) continue;
 
       formationMarkers.push({
         id: createId(),
@@ -1128,47 +1129,6 @@ function pointToSegmentDistance(point: Point, start: Point, end: Point) {
   if (dx === 0 && dy === 0) return distance(point, start);
   const amount = clamp(((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy), 0, 1);
   return distance(point, { x: start.x + amount * dx, y: start.y + amount * dy });
-}
-
-function bestPlayerIndex(players: TacticPlayer[], targetPosition: string) {
-  if (players.length === 0) return 0;
-  let bestIndex = 0;
-  let bestScore = -1;
-
-  players.forEach((player, index) => {
-    const score = positionScore(player.position ?? "", targetPosition);
-    if (score > bestScore) {
-      bestIndex = index;
-      bestScore = score;
-    }
-  });
-  return bestIndex;
-}
-
-function positionScore(playerPosition: string, targetPosition: string) {
-  const player = playerPosition.toUpperCase();
-  const target = targetPosition.toUpperCase();
-  if (player === target) return 100;
-
-  const playerGroup = positionGroup(player);
-  const targetGroup = positionGroup(target);
-  if (playerGroup === targetGroup) return 60;
-  if (
-    (playerGroup === "attack" && targetGroup === "midfield") ||
-    (playerGroup === "midfield" && targetGroup === "attack")
-  ) return 20;
-  if (
-    (playerGroup === "defense" && targetGroup === "midfield") ||
-    (playerGroup === "midfield" && targetGroup === "defense")
-  ) return 12;
-  return 0;
-}
-
-function positionGroup(position: string) {
-  if (position === "TW") return "goalkeeper";
-  if (["LV", "LIV", "IV", "RIV", "RV"].includes(position)) return "defense";
-  if (["LM", "LDM", "ZDM", "RDM", "RM", "LZM", "ZM", "RZM", "ZOM"].includes(position)) return "midfield";
-  return "attack";
 }
 
 function drawDot(context: CanvasRenderingContext2D, x: number, y: number, radius: number) {

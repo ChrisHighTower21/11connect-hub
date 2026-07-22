@@ -21,6 +21,7 @@ export type TacticPlayer = {
   eaId: string;
 
   position: string | null;
+  secondaryPosition?: string | null;
   shirtNumber: number | null;
 };
 

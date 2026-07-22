@@ -15,6 +15,7 @@ export default async function TacticalBoardPage() {
     id: player.id,
     eaId: player.eaId,
     position: player.mainPosition,
+    secondaryPosition: player.secondaryPosition,
     shirtNumber: player.shirtNumber,
   }));
 
