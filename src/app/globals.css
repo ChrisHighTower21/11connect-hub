@@ -814,7 +814,7 @@ body {
 
 .landing-product-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: start;
   justify-content: space-between;
   gap: 12px;
 }
@@ -953,7 +953,7 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
   gap: 48px;
-  align-items: flex-end;
+  align-items: end;
   margin-bottom: 44px;
 }
 
@@ -1074,7 +1074,7 @@ body {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   gap: 11px;
-  align-items: flex-start;
+  align-items: start;
 }
 
 .landing-check-list li > span {
@@ -1132,7 +1132,7 @@ body {
 .landing-board-status {
   min-height: 37px;
   display: flex;
-  align-items: flex-end;
+  align-items: end;
   gap: 18px;
   padding: 8px 2px 0;
   color: #64748b;
@@ -2016,7 +2016,7 @@ body {
   display: grid;
   grid-template-columns: 170px minmax(520px, 1fr) 250px;
   gap: 16px;
-  align-items: flex-start;
+  align-items: start;
 }
 
 .tactical-toolbox,
