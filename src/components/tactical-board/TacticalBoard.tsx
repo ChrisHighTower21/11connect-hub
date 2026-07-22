@@ -31,6 +31,7 @@ type Tool =
 type MarkerKind = "player" | "opponent" | "goalkeeper" | "ball";
 type StrokeKind = "arrow" | "run" | "line" | "freehand";
 type PitchTheme = "classic" | "bright" | "night";
+type JerseyDesign = "solid" | "stripes" | "centerStripe" | "halves" | "sash";
 type BoardFormation = "4-2-3-1" | "4-3-3" | "4-4-2" | "3-5-2";
 
 type MarkerObject = {
@@ -58,6 +59,7 @@ type BoardObject = MarkerObject | StrokeObject;
 type StoredBoard = {
   objects: BoardObject[];
   theme: PitchTheme;
+  jerseyDesign?: JerseyDesign;
 };
 
 type SavedPlan = StoredBoard & {
@@ -107,6 +109,14 @@ const pitchThemes: Array<{ id: PitchTheme; label: string }> = [
   { id: "classic", label: "Klassisch" },
   { id: "bright", label: "Hell" },
   { id: "night", label: "Flutlicht" },
+];
+
+const jerseyDesigns: Array<{ id: JerseyDesign; label: string }> = [
+  { id: "solid", label: "Einfarbig" },
+  { id: "stripes", label: "Längsstreifen" },
+  { id: "centerStripe", label: "Mittelstreifen" },
+  { id: "halves", label: "Zweifarbig" },
+  { id: "sash", label: "Diagonalstreifen" },
 ];
 
 const boardFormations: Record<
@@ -182,6 +192,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
   const [activeColor, setActiveColor] = useState(colors[0]);
   const [strokeWidth, setStrokeWidth] = useState(4);
   const [pitchTheme, setPitchTheme] = useState<PitchTheme>("classic");
+  const [jerseyDesign, setJerseyDesign] = useState<JerseyDesign>("solid");
   const [boardFormation, setBoardFormation] = useState<BoardFormation>("4-2-3-1");
   const [selectedPlayerId, setSelectedPlayerId] = useState(players[0]?.id ?? "");
   const [markerName, setMarkerName] = useState("");
@@ -214,6 +225,13 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
         if (pitchThemes.some((theme) => theme.id === parsed.theme)) {
           setPitchTheme(parsed.theme);
         }
+        const storedJerseyDesign = parsed.jerseyDesign;
+        if (
+          storedJerseyDesign &&
+          jerseyDesigns.some((design) => design.id === storedJerseyDesign)
+        ) {
+          setJerseyDesign(storedJerseyDesign);
+        }
       }
 
       if (storedPlans) {
@@ -233,9 +251,9 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     if (!isHydrated) return;
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ objects, theme: pitchTheme } satisfies StoredBoard)
+      JSON.stringify({ objects, theme: pitchTheme, jerseyDesign } satisfies StoredBoard)
     );
-  }, [isHydrated, objects, pitchTheme]);
+  }, [isHydrated, jerseyDesign, objects, pitchTheme]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -253,8 +271,8 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     if (!context) return;
 
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    drawBoard(context, objects, draft, selectedId, pitchTheme);
-  }, [objects, draft, selectedId, pitchTheme]);
+    drawBoard(context, objects, draft, selectedId, pitchTheme, jerseyDesign);
+  }, [objects, draft, selectedId, pitchTheme, jerseyDesign]);
 
   useEffect(() => {
     function handleKeyboard(event: KeyboardEvent) {
@@ -537,7 +555,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       setPlans((current) =>
         current.map((plan) =>
           plan.id === nextId
-            ? { ...plan, name: cleanName, objects, theme: pitchTheme, updatedAt: now }
+            ? { ...plan, name: cleanName, objects, theme: pitchTheme, jerseyDesign, updatedAt: now }
             : plan
         )
       );
@@ -545,7 +563,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
       nextId = createId();
       setPlans((current) => [
         ...current,
-        { id: nextId, name: cleanName, objects, theme: pitchTheme, updatedAt: now },
+        { id: nextId, name: cleanName, objects, theme: pitchTheme, jerseyDesign, updatedAt: now },
       ]);
       setActivePlanId(nextId);
     }
@@ -561,6 +579,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     pushHistory(objects);
     setObjects(plan.objects);
     setPitchTheme(plan.theme);
+    setJerseyDesign(plan.jerseyDesign ?? "solid");
     setPlanName(plan.name);
     setSelectedId(null);
     setStatus(`„${plan.name}“ geladen`);
@@ -583,7 +602,7 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
     const context = exportCanvas.getContext("2d");
     if (!context) return;
     context.scale(2, 2);
-    drawBoard(context, objects, null, null, pitchTheme);
+    drawBoard(context, objects, null, null, pitchTheme, jerseyDesign);
 
     const link = document.createElement("a");
     const filename = (planName.trim() || "taktiktafel")
@@ -783,6 +802,23 @@ export function TacticalBoard({ players }: { players: TacticPlayer[] }) {
           </div>
 
           <label>
+            <span>Kader-Trikotdesign</span>
+            <select
+              value={jerseyDesign}
+              onChange={(event) => {
+                const design = event.target.value as JerseyDesign;
+                setJerseyDesign(design);
+                const label = jerseyDesigns.find((entry) => entry.id === design)?.label;
+                setStatus(`Trikotdesign „${label ?? design}“ ausgewählt`);
+              }}
+            >
+              {jerseyDesigns.map((design) => (
+                <option key={design.id} value={design.id}>{design.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label>
             <span>Spielfeld-Stil</span>
             <select value={pitchTheme} onChange={(event) => setPitchTheme(event.target.value as PitchTheme)}>
               {pitchThemes.map((theme) => (
@@ -856,7 +892,8 @@ function drawBoard(
   objects: BoardObject[],
   draft: StrokeObject | null,
   selectedId: string | null,
-  theme: PitchTheme
+  theme: PitchTheme,
+  jerseyDesign: JerseyDesign
 ) {
   context.clearRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
   drawPitch(context, theme);
@@ -866,7 +903,9 @@ function drawBoard(
   }
   if (draft) drawStroke(context, draft, false);
   for (const object of objects) {
-    if (object.type === "marker") drawMarker(context, object, object.id === selectedId);
+    if (object.type === "marker") {
+      drawMarker(context, object, object.id === selectedId, jerseyDesign);
+    }
   }
 }
 
@@ -1014,11 +1053,16 @@ function drawStroke(context: CanvasRenderingContext2D, stroke: StrokeObject, sel
   context.restore();
 }
 
-function drawMarker(context: CanvasRenderingContext2D, marker: MarkerObject, selected: boolean) {
+function drawMarker(
+  context: CanvasRenderingContext2D,
+  marker: MarkerObject,
+  selected: boolean,
+  jerseyDesign: JerseyDesign
+) {
   context.save();
-  if (selected) {
+  if (selected && marker.kind === "ball") {
     context.beginPath();
-    context.arc(marker.x, marker.y, marker.kind === "ball" ? 26 : 36, 0, Math.PI * 2);
+    context.arc(marker.x, marker.y, 26, 0, Math.PI * 2);
     context.strokeStyle = "#7dd3fc";
     context.lineWidth = 5;
     context.stroke();
@@ -1050,27 +1094,12 @@ function drawMarker(context: CanvasRenderingContext2D, marker: MarkerObject, sel
     return;
   }
 
-  context.shadowColor = "rgba(0,0,0,.42)";
-  context.shadowBlur = 12;
-  context.shadowOffsetY = 5;
-  const gradient = context.createLinearGradient(marker.x - 24, marker.y - 24, marker.x + 24, marker.y + 24);
-  gradient.addColorStop(0, lighten(marker.color, 0.22));
-  gradient.addColorStop(1, marker.color);
-  context.beginPath();
-  context.arc(marker.x, marker.y, 29, 0, Math.PI * 2);
-  context.fillStyle = gradient;
-  context.fill();
-  context.shadowBlur = 0;
-  context.shadowOffsetY = 0;
-  context.strokeStyle = marker.kind === "goalkeeper" ? "#fef08a" : "rgba(255,255,255,.88)";
-  context.lineWidth = marker.kind === "opponent" ? 4 : 2.5;
-  context.stroke();
-
-  context.fillStyle = readableTextColor(marker.color);
-  context.font = "900 20px Inter, system-ui, sans-serif";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(marker.number || (marker.kind === "goalkeeper" ? "TW" : "•"), marker.x, marker.y + 1);
+  drawJersey(
+    context,
+    marker,
+    marker.kind === "player" ? jerseyDesign : "solid",
+    selected
+  );
 
   if (marker.name) {
     context.font = "800 13px Inter, system-ui, sans-serif";
@@ -1087,6 +1116,100 @@ function drawMarker(context: CanvasRenderingContext2D, marker: MarkerObject, sel
     context.fillText(label, marker.x, labelY + 1);
   }
   context.restore();
+}
+
+function drawJersey(
+  context: CanvasRenderingContext2D,
+  marker: MarkerObject,
+  design: JerseyDesign,
+  selected: boolean
+) {
+  const { x, y, color } = marker;
+  const patternColor = jerseyPatternColor(color);
+
+  context.save();
+  context.shadowColor = selected ? "rgba(56,189,248,.75)" : "rgba(0,0,0,.42)";
+  context.shadowBlur = selected ? 18 : 12;
+  context.shadowOffsetY = selected ? 0 : 5;
+
+  jerseyPath(context, x, y);
+  context.save();
+  context.clip();
+
+  const gradient = context.createLinearGradient(x - 28, y - 28, x + 28, y + 28);
+  gradient.addColorStop(0, lighten(color, 0.22));
+  gradient.addColorStop(1, color);
+  context.fillStyle = gradient;
+  context.fillRect(x - 34, y - 32, 68, 64);
+
+  context.fillStyle = patternColor;
+  if (design === "stripes") {
+    for (let offset = -24; offset <= 24; offset += 16) {
+      context.fillRect(x + offset, y - 32, 8, 64);
+    }
+  } else if (design === "centerStripe") {
+    context.fillRect(x - 8, y - 32, 16, 64);
+  } else if (design === "halves") {
+    context.fillRect(x, y - 32, 34, 64);
+  } else if (design === "sash") {
+    context.translate(x, y);
+    context.rotate(-0.58);
+    context.fillRect(-7, -48, 14, 96);
+  }
+
+  context.restore();
+  context.shadowBlur = 0;
+  context.shadowOffsetY = 0;
+
+  jerseyPath(context, x, y);
+  context.strokeStyle = selected
+    ? "#7dd3fc"
+    : marker.kind === "goalkeeper"
+      ? "#fef08a"
+      : "rgba(255,255,255,.88)";
+  context.lineWidth = selected ? 4 : marker.kind === "opponent" ? 3 : 2;
+  context.lineJoin = "round";
+  context.stroke();
+
+  context.beginPath();
+  context.arc(x, y - 23, 6, 0, Math.PI);
+  context.strokeStyle = "rgba(2,6,23,.72)";
+  context.lineWidth = 3;
+  context.stroke();
+
+  const number = marker.number || (marker.kind === "goalkeeper" ? "TW" : "•");
+  context.font = "900 18px Inter, system-ui, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  const numberWidth = Math.max(24, context.measureText(number).width + 10);
+  roundedRect(context, x - numberWidth / 2, y - 9, numberWidth, 23, 8);
+  context.fillStyle = "rgba(2,6,23,.7)";
+  context.fill();
+  context.fillStyle = "#ffffff";
+  context.fillText(number, x, y + 3);
+  context.restore();
+}
+
+function jerseyPath(context: CanvasRenderingContext2D, x: number, y: number) {
+  context.beginPath();
+  context.moveTo(x - 10, y - 28);
+  context.lineTo(x - 18, y - 24);
+  context.lineTo(x - 32, y - 13);
+  context.lineTo(x - 23, y + 2);
+  context.lineTo(x - 16, y - 4);
+  context.lineTo(x - 16, y + 28);
+  context.lineTo(x + 16, y + 28);
+  context.lineTo(x + 16, y - 4);
+  context.lineTo(x + 23, y + 2);
+  context.lineTo(x + 32, y - 13);
+  context.lineTo(x + 18, y - 24);
+  context.lineTo(x + 10, y - 28);
+  context.quadraticCurveTo(x, y - 20, x - 10, y - 28);
+  context.closePath();
+}
+
+function jerseyPatternColor(color: string) {
+  return readableTextColor(color) === "#0f172a" ? "#172033" : lighten(color, 0.76);
 }
 
 function roundedRect(
